@@ -11,57 +11,55 @@
 #include <stdio.h>
 #include "loadobj.h"
 #include "LoadTGA.h"
+#include "camera_utils.h"
 
 
 // Globals
 // Data would normally be read from files
 
-#define near 1.0
-#define far 70.0
-#define right 0.5
-#define left -0.5
-#define top 0.5
-#define bottom -0.5
+#define NEAR 1.0
+#define FAR 700.0
+#define RIGHT 0.5
+#define LEFT -0.5
+#define TOP 0.5
+#define BOTTOM -0.5
+
+#define HOR_SPEED 0.05
+#define VERT_SPEED 0.05
+#define ROT_SPEED 0.05
 
 #define PI 3.1415
 
 // Models
 Model *model;
 
-  
 // Reference to shader program
 GLuint program;
-
-	
 
 // Position variables
 
 // Camera 
+
 mat4 camera;
-vec3 pos;
-vec3 lookat;
-vec3 rotnormal;
+vec3 camera_pos;
+vec3 camera_rot;
+vec3 camera_lookat;
+
+// Models
 
 mat4 model_pos;
 mat4 model_rot;
 mat4 model_transform;
 
-
 void init(void)
 {
-	GLfloat projectionMatrix[] = { 
-		2.0f*near/(right-left), 0.0f, (right+left)/(right-left), 0.0f,
-		0.0f, 2.0f*near/(top-bottom), (top+bottom)/(top-bottom), 0.0f,
-		0.0f, 0.0f, -(far + near)/(far - near), -2*far*near/(far - near),
-		0.0f, 0.0f, -1.0f, 0.0f };
-
-	
+	// Default camera position and frostum coordinates
+    mat4 projectionMatrix = frustum(LEFT, RIGHT, BOTTOM, TOP, NEAR, FAR);
+	set_default_camera(&camera_pos, &camera_lookat, &camera_rot);
 	
 	// Load models
 	model = LoadModelPlus("../models/bunnyplus.obj");
 	
-	
-
 	// GL inits
 	dumpInfo();
 	glClearColor(0.2,0.2,0.5,0);
@@ -74,20 +72,16 @@ void init(void)
 	printError("init shader");
 
 	// Upload projection matrix to GPU
-    glUniformMatrix4fv(glGetUniformLocation(program, "projMatrix"), 1, GL_TRUE, projectionMatrix);
+    glUniformMatrix4fv(glGetUniformLocation(program, "projectionMatrix"), 1, GL_TRUE, projectionMatrix.m);
 	
 	glEnable(GL_DEPTH_TEST);
 	glActiveTexture(GL_TEXTURE0);
 	printError("init arrays");
 }
 void OnTimer(int value)
-
 {
-
     glutPostRedisplay();
-
     glutTimerFunc(20, &OnTimer, value);
-
 }
 
 void display(void)
@@ -97,27 +91,18 @@ void display(void)
 	// clear the screen
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
-	// Camera coordinates
-	pos.x = -30.0;
-	pos.y = 20.0;
-	pos.z = 15.0;
-	lookat.x = 0.0; 
-	lookat.y = 0.0; 
-	lookat.z = 0.0;
-	rotnormal.x = 0.0; 
-	rotnormal.y = 1.0; 
-	rotnormal.z = 0.0;
-	camera = lookAtv(pos, lookat, rotnormal);
+	// Camera coordinates, move the camera accoring to keyboard events
+	move_camera(&camera_pos, &camera_lookat, &camera_rot, HOR_SPEED, ROT_SPEED, ROT_SPEED);
+	camera = lookAtv(camera_pos, camera_lookat, camera_rot);
 
 	glUniformMatrix4fv(glGetUniformLocation(program, "cameraMatrix"), 1, GL_TRUE, camera.m);
 
 	// Set objects coordinates and upload the objects
-	model_pos = T(0, -7, 0);
-	model_rot = Ry(0.0);
+	model_pos = T(0, 0, 0);
+	model_rot = Ry(1.0);
 	model_transform = Mult(model_pos, model_rot);  
 	glUniformMatrix4fv(glGetUniformLocation(program, "transformMatrix"), 1, GL_TRUE, model_transform.m);	
 	DrawModel(model, program, "in_vertex",  "in_normal", "in_texture");
-
 
 	printError("display");
 	glutSwapBuffers();
