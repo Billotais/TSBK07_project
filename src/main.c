@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include "loadobj.h"
 #include "LoadTGA.h"
-#include "camera_utils.h"
+#include "utils.h"
 
 
 // Globals
