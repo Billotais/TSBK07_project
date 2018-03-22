@@ -1,6 +1,15 @@
 # TSBK07 project
 
 ## 3D Maze Game
+### How to run
+
+Go into the *src* folder, and run
+
+```
+$ make
+```
+
+To compile and run the project.
 
 ### Participants:
 - Felix Eklöf felek877@student.liu.se
