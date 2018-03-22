@@ -33,6 +33,9 @@
 // Models
 Model *model;
 
+// Texture
+GLuint tex;
+
 // Reference to shader program
 GLuint program;
 
@@ -59,7 +62,17 @@ void init(void)
 	
 	// Load models
 	model = LoadModelPlus("../models/bunnyplus.obj");
-	
+
+	// Load textures 
+	LoadTGATextureSimple("../models/grass.tga", &tex);
+
+	// Bind "tex" texture to GL_TEXTURE0, can do the same for other textures
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, tex);
+	// Link the texture unit by sending the id to the GPU
+	glUseProgram(program);
+	glUniform1i(glGetUniformLocation(program, "texUnit"), 0);
+
 	// GL inits
 	dumpInfo();
 	glClearColor(0.2,0.2,0.5,0);
@@ -71,7 +84,8 @@ void init(void)
 	
 	printError("init shader");
 
-	// Upload projection matrix to GPU
+	// Upload projection matrix to GPU, by first selecting the porgram to use
+	glUseProgram(program);
     glUniformMatrix4fv(glGetUniformLocation(program, "projectionMatrix"), 1, GL_TRUE, projectionMatrix.m);
 	
 	glEnable(GL_DEPTH_TEST);
@@ -101,6 +115,8 @@ void display(void)
 	model_pos = T(0, 0, 0);
 	model_rot = Ry(1.0);
 	model_transform = Mult(model_pos, model_rot);  
+
+	glUseProgram(program);
 	glUniformMatrix4fv(glGetUniformLocation(program, "transformMatrix"), 1, GL_TRUE, model_transform.m);	
 	DrawModel(model, program, "in_vertex",  "in_normal", "in_texture");
 
