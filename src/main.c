@@ -104,9 +104,7 @@ void init(void)
     glUniformMatrix4fv(glGetUniformLocation(program, "projectionMatrix"), 1, GL_TRUE, projectionMatrix.m);
 	glUseProgram(program_sky);
     glUniformMatrix4fv(glGetUniformLocation(program_sky, "projectionMatrix"), 1, GL_TRUE, projectionMatrix.m);
-	
-	//glEnable(GL_DEPTH_TEST);
-	//glActiveTexture(GL_TEXTURE0);
+
 	printError("init arrays");
 }
 void OnTimer(int value)
