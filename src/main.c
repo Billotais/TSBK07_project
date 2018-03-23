@@ -31,13 +31,17 @@
 #define PI 3.1415
 
 // Models
+Model *skybox;
 Model *model;
+
 
 // Texture
 GLuint tex;
+GLuint skyTex;
 
 // Reference to shader program
 GLuint program;
+GLuint program_sky;
 
 // Position variables
 
@@ -49,6 +53,8 @@ vec3 camera_rot;
 vec3 camera_lookat;
 
 // Models
+mat4 sky_scale;
+mat4 sky_transform;
 
 mat4 model_pos;
 mat4 model_rot;
@@ -62,34 +68,45 @@ void init(void)
 	
 	// Load models
 	model = LoadModelPlus("../models/bunnyplus.obj");
+	skybox = LoadModelPlus("../models/skybox.obj");
 
 	// Load textures 
 	LoadTGATextureSimple("../models/grass.tga", &tex);
+	LoadTGATextureSimple("../models/SkyBox512.tga", &skyTex);
 
-	// Bind "tex" texture to GL_TEXTURE0, can do the same for other textures
+	// Bind texture to GL_TEXTURE
 	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, skyTex);
+	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, tex);
+
 	// Link the texture unit by sending the id to the GPU
+	
+	glUseProgram(program_sky);
+	glUniform1i(glGetUniformLocation(program_sky, "texUnit"), 0);
 	glUseProgram(program);
-	glUniform1i(glGetUniformLocation(program, "texUnit"), 0);
+	glUniform1i(glGetUniformLocation(program, "texUnit"), 1);
 
 	// GL inits
 	dumpInfo();
 	glClearColor(0.2,0.2,0.5,0);
-	glDisable(GL_DEPTH_TEST);
+	//glDisable(GL_DEPTH_TEST);
 	printError("GL inits");
 
 	// Load and compile shader
 	program = loadShaders("project.vert", "project.frag");
+	program_sky = loadShaders("sky.vert", "sky.frag");
 	
 	printError("init shader");
 
 	// Upload projection matrix to GPU, by first selecting the porgram to use
 	glUseProgram(program);
     glUniformMatrix4fv(glGetUniformLocation(program, "projectionMatrix"), 1, GL_TRUE, projectionMatrix.m);
+	glUseProgram(program_sky);
+    glUniformMatrix4fv(glGetUniformLocation(program_sky, "projectionMatrix"), 1, GL_TRUE, projectionMatrix.m);
 	
-	glEnable(GL_DEPTH_TEST);
-	glActiveTexture(GL_TEXTURE0);
+	//glEnable(GL_DEPTH_TEST);
+	//glActiveTexture(GL_TEXTURE0);
 	printError("init arrays");
 }
 void OnTimer(int value)
@@ -108,15 +125,32 @@ void display(void)
 	// Camera coordinates, move the camera accoring to keyboard events
 	move_camera(&camera_pos, &camera_lookat, &camera_rot, HOR_SPEED, ROT_SPEED, ROT_SPEED);
 	camera = lookAtv(camera_pos, camera_lookat, camera_rot);
+	
+	
 
-	glUniformMatrix4fv(glGetUniformLocation(program, "cameraMatrix"), 1, GL_TRUE, camera.m);
+	// Draw the sky
+	sky_scale = S(70, 70, 70);
+	mat4 camera_pos_moved = T(camera_pos.x, 0, camera_pos.z);
+	sky_transform = Mult(camera_pos_moved, sky_scale);
 
-	// Set objects coordinates and upload the objects
+	glUseProgram(program_sky);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
+	glUniform1i(glGetUniformLocation(program_sky, "texUnit"), 0);
+	glUniformMatrix4fv(glGetUniformLocation(program_sky, "cameraMatrix"), 1, GL_TRUE, camera.m);
+	glUniformMatrix4fv(glGetUniformLocation(program_sky, "transformMatrix"), 1, GL_TRUE,  sky_transform.m);
+	DrawModel(skybox,program_sky, "in_vertex",  "in_normal", "in_texture");
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+
+	// Draw other objects
 	model_pos = T(0, 0, 0);
 	model_rot = Ry(1.0);
 	model_transform = Mult(model_pos, model_rot);  
 
 	glUseProgram(program);
+	glUniform1i(glGetUniformLocation(program, "texUnit"), 1);
+	glUniformMatrix4fv(glGetUniformLocation(program, "cameraMatrix"), 1, GL_TRUE, camera.m);
 	glUniformMatrix4fv(glGetUniformLocation(program, "transformMatrix"), 1, GL_TRUE, model_transform.m);	
 	DrawModel(model, program, "in_vertex",  "in_normal", "in_texture");
 

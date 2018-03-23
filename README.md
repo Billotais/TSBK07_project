@@ -20,16 +20,16 @@ We will make a maze game, in first-person perspective. The maze is 2D and based 
 
 ### Will do
 
-- Skybox Loïs
+- Skybox Loï **done**
 - Textured walls and floor and objects. Loïs
     Floor, walls, door, bunny
 - Collission detection camera-walls. Felix Camera position 0.1 < x < 0.9g
     - get_xy_cell(x, y) => return type of cell
     - get_adgacent(x, y) => return type of 4 adgacents cell (N, W, S, E)
 - Simple geometry for objects, like boxes and spheres Felix 0.45 < x < 0.55
-- First-person view ok
-- Light sources Loïs Sun
-- Import OBJ objects Loïs
+- First-person view **done**
+- Light sources Loïs Su **done ?**
+- Import OBJ objects Loïs**done**
 - Score objects Felix Star
 - Spotlight source following the player. Loïs Point light on player
 - Dynamic maze (open / close some walls) Felix
