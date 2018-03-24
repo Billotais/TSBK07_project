@@ -14,7 +14,7 @@ out vec4 out_Color;
 void main(void)
 {
 	// Define a light, might be passed as a parameter
-	vec3 light_coord = vec3(10.0, 50.0, 10.0);
+	vec3 light_coord = vec3(10.0, 10.0, 10.0);
 	vec3 light_level = vec3(1.0, 1.0, 1.0);
 	bool isDirectional = false;
 	
