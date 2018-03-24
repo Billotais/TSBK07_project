@@ -2,6 +2,14 @@
 #define PI 3.141592
 #define SIZE 20
 
+void draw_square(int x, int y, mat4 base, Model *model, GLuint program)
+{
+	mat4 model_pos = T(x, 0, y);
+	mat4 model_rot = base;
+	mat4 model_transform = Mult(model_pos, model_rot);
+	glUniformMatrix4fv(glGetUniformLocation(program, "transformMatrix"), 1, GL_TRUE, model_transform.m);
+	DrawModel(model, program, "in_vertex",  "in_normal", "in_texture");
+}
 
 void set_default_camera(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
 {

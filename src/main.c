@@ -18,17 +18,19 @@
 // Data would normally be read from files
 
 #define NEAR 1.0
-#define FAR 700.0
+#define FAR 500.0
 #define RIGHT 0.5
 #define LEFT -0.5
 #define TOP 0.5
 #define BOTTOM -0.5
 
-#define HOR_SPEED 0.05
-#define VERT_SPEED 0.05
-#define ROT_SPEED 0.05
+#define HOR_SPEED 0.01
+#define VERT_SPEED 0.01
+#define ROT_SPEED 0.03
 
 #define PI 3.1415
+
+#define SIZE 20
 
 // Models
 Model *skybox;
@@ -36,7 +38,8 @@ Model *model;
 
 
 // Texture
-GLuint tex;
+GLuint wallTex;
+GLuint grassTex;
 GLuint skyTex;
 
 // Reference to shader program
@@ -56,9 +59,15 @@ vec3 camera_lookat;
 mat4 sky_scale;
 mat4 sky_transform;
 
-mat4 model_pos;
-mat4 model_rot;
-mat4 model_transform;
+//mat4 model_pos;
+//mat4 model_rot;
+//mat4 model_transform;
+mat4 north_wall_pos;
+mat4 east_wall_pos;
+mat4 south_wall_pos;
+mat4 west_wall_pos;
+mat4 ground_pos;
+
 
 void init(void)
 {
@@ -67,25 +76,29 @@ void init(void)
 	set_default_camera(&camera_pos, &camera_lookat, &camera_rot);
 	
 	// Load models
-	model = LoadModelPlus("../models/bunnyplus.obj");
+	model = LoadModelPlus("../models/square.obj");
 	skybox = LoadModelPlus("../models/skybox.obj");
 
 	// Load textures 
-	LoadTGATextureSimple("../models/grass.tga", &tex);
+	LoadTGATextureSimple("../models/grass.tga", &grassTex);
+	LoadTGATextureSimple("../models/wall.tga", &wallTex);
 	LoadTGATextureSimple("../models/SkyBox512.tga", &skyTex);
 
 	// Bind texture to GL_TEXTURE
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, skyTex);
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, tex);
+	glBindTexture(GL_TEXTURE_2D, grassTex);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, wallTex);
+
 
 	// Link the texture unit by sending the id to the GPU
 	
-	glUseProgram(program_sky);
+	/*glUseProgram(program_sky);
 	glUniform1i(glGetUniformLocation(program_sky, "texUnit"), 0);
 	glUseProgram(program);
-	glUniform1i(glGetUniformLocation(program, "texUnit"), 1);
+	glUniform1i(glGetUniformLocation(program, "texUnit"), 1);*/
 
 	// GL inits
 	dumpInfo();
@@ -105,6 +118,13 @@ void init(void)
 	glUseProgram(program_sky);
     glUniformMatrix4fv(glGetUniformLocation(program_sky, "projectionMatrix"), 1, GL_TRUE, projectionMatrix.m);
 
+
+	// Init default rotation :
+	north_wall_pos = Ry(0.0);
+	east_wall_pos = Mult(T(1, 0, 0),Ry(-PI/2));
+	south_wall_pos = Mult(T(1, 0, 1), Ry(PI));
+	west_wall_pos = Mult(T(0, 0, 1),Ry(PI/2));
+	ground_pos = Mult(T(0, 0, 1), Rx(-PI/2));
 	printError("init arrays");
 }
 void OnTimer(int value)
@@ -134,27 +154,58 @@ void display(void)
 	glUseProgram(program_sky);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_CULL_FACE);
+	// Set the sky texture to the texUnit
 	glUniform1i(glGetUniformLocation(program_sky, "texUnit"), 0);
+	// Upload transformation and camera matricies and draw sky
 	glUniformMatrix4fv(glGetUniformLocation(program_sky, "cameraMatrix"), 1, GL_TRUE, camera.m);
 	glUniformMatrix4fv(glGetUniformLocation(program_sky, "transformMatrix"), 1, GL_TRUE,  sky_transform.m);
 	DrawModel(skybox,program_sky, "in_vertex",  "in_normal", "in_texture");
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 
-	// Draw other objects
-	model_pos = T(0, 0, 0);
-	model_rot = Ry(1.0);
-	model_transform = Mult(model_pos, model_rot);  
+	
+	
 
 	glUseProgram(program);
-	glUniform1i(glGetUniformLocation(program, "texUnit"), 1);
+	// Upload camera matrix
 	glUniformMatrix4fv(glGetUniformLocation(program, "cameraMatrix"), 1, GL_TRUE, camera.m);
-	glUniformMatrix4fv(glGetUniformLocation(program, "transformMatrix"), 1, GL_TRUE, model_transform.m);	
-	DrawModel(model, program, "in_vertex",  "in_normal", "in_texture");
+	
+
+	// for x, y in array:
+	//     if A[x,y] == 0 or other spaces:
+	for (int x = 1; x < SIZE - 1; ++x)
+	{
+		for (int y = 1; y < SIZE - 1; ++y)
+		{
+			//if (has_ground(x, y))
+			if (1)
+			{
+				// Draw ground
+				glUniform1i(glGetUniformLocation(program, "texUnit"), 1);
+				draw_square(x, y, ground_pos, model, program);
+
+				// Use wall texture
+				glUniform1i(glGetUniformLocation(program, "texUnit"), 2);
+				// Draw wall
+				/*
+				if (wall_north(x, y)) draw_square(x, y, north_wall_pos, model, program);
+				if (wall_east(x, y))  draw_square(x, y, east_wall_pos,  model, program);
+				if (wall_south(x, y)) draw_square(x, y, south_wall_pos, model, program);
+				if (wall_west(x, y))  draw_square(x, y, west_wall_pos,  model, program);
+				*/
+				draw_square(x, y, north_wall_pos, model, program);
+			}
+		}
+	}
+	
+
+	
+
 
 	printError("display");
 	glutSwapBuffers();
 }
+
 
 int main(int argc, char *argv[])
 {
