@@ -169,6 +169,8 @@ void display(void)
 	glUseProgram(program);
 	// Upload camera matrix
 	glUniformMatrix4fv(glGetUniformLocation(program, "cameraMatrix"), 1, GL_TRUE, camera.m);
+	GLfloat pos[3] = {camera_pos.x, camera_pos.y, camera_pos.z};
+	glUniform3fv(glGetUniformLocation(program, "cameraPosition"),  1, pos);
 	
 
 	// for x, y in array:
