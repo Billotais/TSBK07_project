@@ -198,6 +198,8 @@ void display(void)
 				*/
 				draw_square(x, y, north_wall_pos, model, program);
 				draw_square(x, y, south_wall_pos, model, program);
+				draw_square(x, y, east_wall_pos, model, program);
+				//draw_square(x, y, west_wall_pos, model, program);
 			}
 		}
 	}

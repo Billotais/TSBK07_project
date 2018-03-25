@@ -9,5 +9,5 @@ out vec4 out_Color;
 
 void main(void)
 {	
-	out_Color = texture(texUnit, transfer_texture);
+	out_Color = 0.5*texture(texUnit, transfer_texture);
 }
