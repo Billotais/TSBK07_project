@@ -26,7 +26,7 @@
 
 #define HOR_SPEED 0.01
 #define VERT_SPEED 0.01
-#define ROT_SPEED 0.03
+#define ROT_SPEED 0.05
 
 #define PI 3.1415
 
@@ -72,7 +72,8 @@ mat4 ground_pos;
 void init(void)
 {
 	// Default camera position and frostum coordinates
-    mat4 projectionMatrix = frustum(LEFT, RIGHT, BOTTOM, TOP, NEAR, FAR);
+    //mat4 projectionMatrix = frustum(LEFT, RIGHT, BOTTOM, TOP, NEAR, FAR);
+	mat4 projectionMatrix = perspective(90, 16.0/9.0, 0.1, 500);
 	set_default_camera(&camera_pos, &camera_lookat, &camera_rot);
 	
 	// Load models
@@ -196,6 +197,7 @@ void display(void)
 				if (wall_west(x, y))  draw_square(x, y, west_wall_pos,  model, program);
 				*/
 				draw_square(x, y, north_wall_pos, model, program);
+				draw_square(x, y, south_wall_pos, model, program);
 			}
 		}
 	}

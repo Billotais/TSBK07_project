@@ -13,8 +13,8 @@ void draw_square(int x, int y, mat4 base, Model *model, GLuint program)
 
 void set_default_camera(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
 {
-    camera_pos->x = 0;camera_pos->y = 0.5;camera_pos->z=5.0;
-	camera_lookat->x = 0.0; camera_lookat->y = 0.5; camera_lookat->z = 0.0;
+    camera_pos->x = 0;camera_pos->y = 0.5;camera_pos->z=0.0;
+	camera_lookat->x = 0.0; camera_lookat->y = 0.5; camera_lookat->z = 5.0;
 	camera_rot->x = 0.0; camera_rot->y = 1.0; camera_rot->z = 0.0;
 } 
 void move_camera(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot, float horizontal_speed, float rotation_speed, float vertical_speed)

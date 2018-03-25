@@ -18,8 +18,8 @@ void main(void)
 	gl_Position = vertex_transformed;
 	
 	// Transfer values to fragment shader
-	transfer_normal_transformed = transpose(inverse(mat3(global_transform)))*in_normal;
+	transfer_normal_transformed = normalize(transpose(inverse(mat3(transformMatrix)))*in_normal);
 	transfer_texture = in_texture;
-	transfer_vertex_transformed = vertex_transformed;
+	transfer_vertex_transformed = transformMatrix*vec4(in_vertex, 1.0);
 	
 }
