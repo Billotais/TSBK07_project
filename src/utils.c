@@ -1,6 +1,14 @@
 #include "utils.h"
 #define PI 3.141592
 #define SIZE 20
+// X are solid walls
+// x are not solid walls
+// 0 are empty cells
+// S is a score object
+// B is the beggining cell
+// E is the end cell
+// D is a door 
+// I is an interruptor
 char mazearray[SIZE][SIZE] = {
 	{'X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X'},
 	{'X','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','X'},
@@ -23,6 +31,7 @@ char mazearray[SIZE][SIZE] = {
 	{'X','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','X'},
 	{'X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X'}
 };
+
 
 void draw_square(int x, int y, mat4 base, Model *model, GLuint program)
 {

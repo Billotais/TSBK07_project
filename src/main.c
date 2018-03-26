@@ -174,8 +174,6 @@ void display(void)
 	glUniform3fv(glGetUniformLocation(program, "cameraPosition"),  1, pos);
 	
 
-	// for x, y in array:
-	//     if A[x,y] == 0 or other spaces:
 	for (int y = 1; y < SIZE - 1; ++y)
 	{
 		for (int x = 1; x < SIZE - 1; ++x)
@@ -189,7 +187,8 @@ void display(void)
 
 				// Use wall texture
 				glUniform1i(glGetUniformLocation(program, "texUnit"), 2);
-				// Draw wall
+				
+				// Draw walls
 				
 				if (wall_north(x, y)) draw_square(x, y, north_wall_pos, model, program);
 				if (wall_east(x, y))  draw_square(x, y, east_wall_pos,  model, program);
