@@ -76,61 +76,48 @@ void move_camera(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot, float 
 	// if not ok, restore value
 	// Call check objective and doors
 }
-char get_xy_cell(int x int y){
-char cell;
-// unsure if this is the best way or the correct way to get the character
-cell = mazearray[x][y];
-reurn cell;
+char get_xy_cell(int x int y)
+{
+	return mazearray[x][y];
 }
 
 
-int check_wall(int x, int y) {
-char cell;
-cell = get_xy_cell(x,y);
-if (cell='X')
-    return 1;
-if (cell='0')
-    return 0;
-else if
-    return 0;
+int check_wall(int x, int y) 
+{
+	char cell = get_xy_cell(x,y);
+	if (cell=='X') return 1;
+	else return 0;
 }
 
-int has_ground(int x, int y){
-char cell;
-cell = get_xy_cell(x,y);
-if (cell='0')
-    return 1;
-else if (cell='S')
-    return 1;
-else if (cell='I')
-    return 1;
-else if (cell='B')
-    return 1;
-else return 0;
+int has_ground(int x, int y)
+{
+	char cell = get_xy_cell(x,y);
+	if (cell=='0' || cell=='S' || cell=='I' || cell=='B') return 1;
+	else return 0;
 }
 
-int wall_south(int x, int y){
-int r=0;
-if (y<20)
-    y=y+1;
-r= check_wall(int x, int y);
-return r
+int wall_east(int x, int y)
+{
+	if (x < SIZE - 1) return check_wall(x+1, y);
+	else return 0;
 }
 
-int wall_west(int x, int y){
-int r=0;
-if (x>0)
-    x=x-1;
-r= check_wall(int x, int y);
-return r
+int wall_north(int x, int y)
+{
+	if (y > 1) return check_wall(x, y-1);
+	else return 0;
 }
 
-int wall_south(int x, int y){
-int r=0;
-if (x<20)
-    x=x+1;
-r= check_wall(int x, int y);
-return r
+int wall_west(int x, int y)
+{
+	if (x > 0) return check_wall(x-1, y);
+	else return 0;
+}
+
+int wall_south(int x, int y)
+{
+	if (x < SIZE - 1) return check_wall(x, y+1);
+	else return 0;
 }
 
 
