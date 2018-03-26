@@ -176,12 +176,12 @@ void display(void)
 
 	// for x, y in array:
 	//     if A[x,y] == 0 or other spaces:
-	for (int x = 1; x < SIZE - 1; ++x)
+	for (int y = 1; y < SIZE - 1; ++y)
 	{
-		for (int y = 1; y < SIZE - 1; ++y)
+		for (int x = 1; x < SIZE - 1; ++x)
 		{
-			//if (has_ground(x, y))
-			if (1)
+			if (has_ground(x, y))
+			
 			{
 				// Draw ground
 				glUniform1i(glGetUniformLocation(program, "texUnit"), 1);
@@ -190,16 +190,12 @@ void display(void)
 				// Use wall texture
 				glUniform1i(glGetUniformLocation(program, "texUnit"), 2);
 				// Draw wall
-				/*
+				
 				if (wall_north(x, y)) draw_square(x, y, north_wall_pos, model, program);
 				if (wall_east(x, y))  draw_square(x, y, east_wall_pos,  model, program);
 				if (wall_south(x, y)) draw_square(x, y, south_wall_pos, model, program);
 				if (wall_west(x, y))  draw_square(x, y, west_wall_pos,  model, program);
-				*/
-				draw_square(x, y, north_wall_pos, model, program);
-				draw_square(x, y, south_wall_pos, model, program);
-				draw_square(x, y, east_wall_pos, model, program);
-				//draw_square(x, y, west_wall_pos, model, program);
+
 			}
 		}
 	}
