@@ -36,6 +36,7 @@
 Model *skybox;
 Model *model;
 Model *score;
+Model *lever;
 
 
 // Texture
@@ -43,6 +44,8 @@ GLuint wallTex;
 GLuint grassTex;
 GLuint skyTex;
 GLuint scoreTex;
+GLuint doorTex;
+GLuint leverTex;
 
 // Reference to shader program
 GLuint program;
@@ -82,12 +85,15 @@ void init(void)
 	model = LoadModelPlus("../models/square.obj");
 	skybox = LoadModelPlus("../models/skybox.obj");
 	score = LoadModelPlus("../models/can.obj");
+	lever = LoadModelPlus("../models/bunnyplus.obj");
 
 	// Load textures 
 	LoadTGATextureSimple("../models/grass.tga", &grassTex);
 	LoadTGATextureSimple("../models/wall.tga", &wallTex);
 	LoadTGATextureSimple("../models/SkyBox512.tga", &skyTex);
 	LoadTGATextureSimple("../models/wall.tga", &scoreTex);
+	LoadTGATextureSimple("../models/door.tga", &doorTex);
+	LoadTGATextureSimple("../models/door.tga", &leverTex);
 
 	// Bind texture to GL_TEXTURE
 	glActiveTexture(GL_TEXTURE0);
@@ -98,6 +104,10 @@ void init(void)
 	glBindTexture(GL_TEXTURE_2D, wallTex);
 	glActiveTexture(GL_TEXTURE3);
 	glBindTexture(GL_TEXTURE_2D, scoreTex);
+	glActiveTexture(GL_TEXTURE4);
+	glBindTexture(GL_TEXTURE_2D, doorTex);
+	glActiveTexture(GL_TEXTURE5);
+	glBindTexture(GL_TEXTURE_2D, leverTex);
 
 
 	// Link the texture unit by sending the id to the GPU
@@ -187,27 +197,42 @@ void display(void)
 			if (has_ground(x, y))
 			
 			{
-				// Draw ground
+				// Draw grass ground
 				glUniform1i(glGetUniformLocation(program, "texUnit"), 1);
-				draw_square(x, y, ground_pos, model, program);
+				if (get_xy_cell(x, y) != 'd') draw_square(x, y, ground_pos, model, program);
 
 				// Use wall texture
 				glUniform1i(glGetUniformLocation(program, "texUnit"), 2);
-				
 				// Draw walls
-				
 				if (wall_north(x, y)) draw_square(x, y, north_wall_pos, model, program);
 				if (wall_east(x, y))  draw_square(x, y, east_wall_pos,  model, program);
 				if (wall_south(x, y)) draw_square(x, y, south_wall_pos, model, program);
 				if (wall_west(x, y))  draw_square(x, y, west_wall_pos,  model, program);
 
+
 				// Show score objects
 				glUniform1i(glGetUniformLocation(program, "texUnit"), 3);
 				if (get_xy_cell(x, y) == 'S') draw_score(x, y, score, program);
-				
-				
 
+				// Draw doors
+				glUniform1i(glGetUniformLocation(program, "texUnit"), 4);
+				if (get_xy_cell(x+1, y) == 'D') draw_square(x, y, east_wall_pos, model, program);
+				if (get_xy_cell(x-1, y) == 'D') draw_square(x, y, west_wall_pos, model, program);
+				if (get_xy_cell(x, y+1) == 'D') draw_square(x, y, south_wall_pos, model, program);
+				if (get_xy_cell(x, y-1) == 'D') draw_square(x, y, north_wall_pos, model, program);
+
+				// Floor for opened doors
+				if (get_xy_cell(x, y) == 'd') draw_square(x, y, ground_pos, model, program);
+
+				// draw lever
+				if (get_xy_cell(x, y) == 'L') draw_up_lever(x, y, lever, program);
+				if (get_xy_cell(x, y) == 'l') draw_down_lever(x, y, lever, program);
+				
+				
+				
 			}
+			
+			
 		}
 	}
 	

@@ -13,22 +13,22 @@ int SCORE = 0;
 char mazearray[SIZE][SIZE] = {
 	{'X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X'},
 	{'X','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','X'},
-	{'X','0','X','0','0','0','S','0','0','0','0','0','0','0','0','0','0','0','0','X'},
-	{'X','0','X','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','X'},
-	{'X','0','X','X','X','X','0','0','0','0','0','0','0','0','0','S','0','0','0','X'},
-	{'X','0','0','0','0','X','X','0','0','0','0','0','0','0','0','0','0','0','0','X'},
-	{'X','0','0','0','0','X','0','0','0','0','0','0','S','0','0','0','0','0','0','X'},
-	{'X','0','0','0','0','X','0','0','0','0','0','0','0','0','0','0','0','0','0','X'},
-	{'X','0','0','X','X','X','0','0','0','0','0','0','0','0','0','0','0','0','0','X'},
-	{'X','S','0','0','0','X','0','0','0','0','0','0','0','0','0','0','0','0','0','X'},
-	{'X','0','0','0','0','X','X','0','0','0','0','0','0','0','0','0','0','0','0','X'},
-	{'X','0','0','0','0','0','X','0','0','0','0','0','0','0','0','0','0','0','0','X'},
-	{'X','0','0','0','0','0','X','X','X','0','0','S','0','0','0','0','0','0','0','X'},
-	{'X','0','0','0','0','0','0','0','X','0','0','0','0','0','0','0','0','0','0','X'},
-	{'X','0','0','S','0','0','0','0','X','X','0','0','0','0','0','0','0','0','0','X'},
-	{'X','0','X','0','0','0','0','0','0','X','0','0','0','0','0','0','0','0','0','X'},
-	{'X','0','X','0','0','0','0','S','0','0','S','0','0','0','0','0','0','0','0','X'},
-	{'X','0','X','X','X','0','0','0','0','0','0','0','0','0','0','0','0','0','0','X'},
+	{'X','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','X'},
+	{'X','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','X'},
+	{'X','0','0','0','X','X','X','D','X','X','0','0','0','0','0','0','0','0','0','X'},
+	{'X','0','0','0','0','0','0','0','0','X','0','0','0','0','0','0','0','0','0','X'},
+	{'X','0','0','0','X','0','0','0','0','X','0','0','0','0','0','0','0','0','0','X'},
+	{'X','0','0','0','d','0','0','0','0','X','0','0','0','0','0','0','0','0','0','X'},
+	{'X','0','0','0','d','0','0','0','0','D','0','0','0','0','0','0','0','0','0','X'},
+	{'X','0','0','0','X','X','X','d','X','X','0','0','0','0','0','0','0','0','0','X'},
+	{'X','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','X'},
+	{'X','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','X'},
+	{'X','0','X','0','X','0','0','0','0','0','0','0','0','0','0','0','0','0','0','X'},
+	{'X','0','0','L','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','X'},
+	{'X','0','X','0','X','0','0','0','0','0','0','0','0','0','0','0','0','0','0','X'},
+	{'X','0','d','0','d','0','0','0','0','0','0','0','0','0','0','0','0','0','0','X'},
+	{'X','0','X','D','X','0','0','0','0','0','0','0','0','0','0','0','0','0','0','X'},
+	{'X','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','X'},
 	{'X','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','X'},
 	{'X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X'}
 };
@@ -45,12 +45,27 @@ void draw_square(int x, int y, mat4 base, Model *model, GLuint program)
 void draw_score(int x, int y, Model *model, GLuint program)
 {
 	mat4 model_pos = T(x+0.5, 0, y+0.5);
-	mat4 model_rot = S(0.001, 0.001, 0.001);
-	mat4 model_transform = Mult(model_pos, model_rot);
+	mat4 model_scale = S(0.001, 0.001, 0.001);
+	mat4 model_transform = Mult(model_pos, model_scale);
 	glUniformMatrix4fv(glGetUniformLocation(program, "transformMatrix"), 1, GL_TRUE, model_transform.m);
 	DrawModel(model, program, "in_vertex",  "in_normal", "in_texture");
 }
-
+void draw_up_lever(int x, int y, Model *model, GLuint program)
+{
+	mat4 model_pos = T(x+0.5, 0.5, y+0.5);
+	mat4 model_scale = S(0.1, 0.1, 0.1);
+	mat4 model_transform = Mult(model_pos, model_scale);
+	glUniformMatrix4fv(glGetUniformLocation(program, "transformMatrix"), 1, GL_TRUE, model_transform.m);
+	DrawModel(model, program, "in_vertex",  "in_normal", "in_texture");
+}
+void draw_down_lever(int x, int y, Model *model, GLuint program)
+{
+	mat4 model_pos = T(x+0.5, 0.5, y+0.5);
+	mat4 model_scale = S(0.06, 0.06, 0.06);
+	mat4 model_transform = Mult(model_pos, model_scale);
+	glUniformMatrix4fv(glGetUniformLocation(program, "transformMatrix"), 1, GL_TRUE, model_transform.m);
+	DrawModel(model, program, "in_vertex",  "in_normal", "in_texture");
+}
 void set_default_camera(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
 {
     camera_pos->x = 0;camera_pos->y = 0.5;camera_pos->z=0.0;
@@ -59,7 +74,11 @@ void set_default_camera(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
 } 
 void move_camera(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot, float horizontal_speed, float rotation_speed, float vertical_speed)
 {
-	// Save camera posiitin
+	// Check if we are on a lever before moving
+	int was_on_lever = (get_xy_cell((int)floor(camera_pos->x), (int)floor(camera_pos->z)) == 'L' ||
+						get_xy_cell((int)floor(camera_pos->x), (int)floor(camera_pos->z)) == 'l');
+	int old_x = floor(camera_pos->x);
+	int old_y = floor(camera_pos->z);
 
 	if (glutKeyIsDown('w')) // Go forward
 	{
@@ -111,7 +130,14 @@ void move_camera(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot, float 
 		*camera_lookat = VectorAdd(*camera_lookat, SetVector(0.0, -vertical_speed, 0.0));
 		*camera_pos = VectorAdd(*camera_pos, SetVector(0.0, -vertical_speed, 0.0));  
 	}
+	enable_lever(camera_pos);
 	pickup_score(camera_pos);
+
+	// If we left a lever cell, we reset the lever to be enable again
+	if (was_on_lever && get_xy_cell((int)floor(camera_pos->x), (int)floor(camera_pos->z)) != 'l')
+	{
+		mazearray[old_x][old_y] = 'L';
+	}
 	// Call cehck_position
 	// if not ok, restore value
 	// Call check objective and doors
@@ -131,6 +157,27 @@ void pickup_score(vec3* camera_pos)
 
 	}
 }
+void enable_lever(vec3* camera_pos)
+{
+	if (get_xy_cell(camera_pos->x, camera_pos->z) == 'L' && glutKeyIsDown('p'))
+	{
+
+		change_state_doors();
+		mazearray[(int)floor(camera_pos->x)][(int)floor(camera_pos->z)] = 'l';
+
+	}
+}
+void change_state_doors()
+{
+	for (int x = 0; x < SIZE; ++x)
+	{
+		for (int y = 0; y < SIZE; ++y)
+		{
+			if (get_xy_cell(x, y) == 'D') mazearray[x][y] = 'd';
+			else if (get_xy_cell(x, y) == 'd') mazearray[x][y] = 'D';
+		}
+	}
+}
 char get_xy_cell(int x, int y)
 {
 	return mazearray[x][y];
@@ -147,7 +194,7 @@ int check_wall(int x, int y)
 int has_ground(int x, int y)
 {
 	char cell = get_xy_cell(x,y);
-	if (cell=='0' || cell=='S' || cell=='I' || cell=='B') return 1;
+	if (cell=='0' || cell=='S' || cell=='I' || cell=='B' || cell=='d' || cell=='l' || cell=='L') return 1;
 	else return 0;
 }
 
