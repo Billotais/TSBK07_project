@@ -35,12 +35,14 @@
 // Models
 Model *skybox;
 Model *model;
+Model *score;
 
 
 // Texture
 GLuint wallTex;
 GLuint grassTex;
 GLuint skyTex;
+GLuint scoreTex;
 
 // Reference to shader program
 GLuint program;
@@ -79,11 +81,13 @@ void init(void)
 	// Load models
 	model = LoadModelPlus("../models/square.obj");
 	skybox = LoadModelPlus("../models/skybox.obj");
+	score = LoadModelPlus("../models/can.obj");
 
 	// Load textures 
 	LoadTGATextureSimple("../models/grass.tga", &grassTex);
 	LoadTGATextureSimple("../models/wall.tga", &wallTex);
 	LoadTGATextureSimple("../models/SkyBox512.tga", &skyTex);
+	LoadTGATextureSimple("../models/wall.tga", &scoreTex);
 
 	// Bind texture to GL_TEXTURE
 	glActiveTexture(GL_TEXTURE0);
@@ -92,6 +96,8 @@ void init(void)
 	glBindTexture(GL_TEXTURE_2D, grassTex);
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, wallTex);
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, scoreTex);
 
 
 	// Link the texture unit by sending the id to the GPU
@@ -194,6 +200,12 @@ void display(void)
 				if (wall_east(x, y))  draw_square(x, y, east_wall_pos,  model, program);
 				if (wall_south(x, y)) draw_square(x, y, south_wall_pos, model, program);
 				if (wall_west(x, y))  draw_square(x, y, west_wall_pos,  model, program);
+
+				// Show score objects
+				glUniform1i(glGetUniformLocation(program, "texUnit"), 3);
+				if (get_xy_cell(x, y) == 'S') draw_score(x, y, score, program);
+				
+				
 
 			}
 		}

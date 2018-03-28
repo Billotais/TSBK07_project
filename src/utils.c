@@ -9,24 +9,25 @@
 // E is the end cell
 // D is a door 
 // I is an interruptor
+int SCORE = 0;
 char mazearray[SIZE][SIZE] = {
 	{'X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X'},
 	{'X','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','X'},
+	{'X','0','X','0','0','0','S','0','0','0','0','0','0','0','0','0','0','0','0','X'},
 	{'X','0','X','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','X'},
-	{'X','0','X','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','X'},
-	{'X','0','X','X','X','X','0','0','0','0','0','0','0','0','0','0','0','0','0','X'},
-	{'X','0','0','0','0','X','0','0','0','0','0','0','0','0','0','0','0','0','0','X'},
-	{'X','0','0','0','0','X','0','0','0','0','0','0','0','0','0','0','0','0','0','X'},
+	{'X','0','X','X','X','X','0','0','0','0','0','0','0','0','0','S','0','0','0','X'},
+	{'X','0','0','0','0','X','X','0','0','0','0','0','0','0','0','0','0','0','0','X'},
+	{'X','0','0','0','0','X','0','0','0','0','0','0','S','0','0','0','0','0','0','X'},
 	{'X','0','0','0','0','X','0','0','0','0','0','0','0','0','0','0','0','0','0','X'},
 	{'X','0','0','X','X','X','0','0','0','0','0','0','0','0','0','0','0','0','0','X'},
-	{'X','0','0','0','0','X','0','0','0','0','0','0','0','0','0','0','0','0','0','X'},
+	{'X','S','0','0','0','X','0','0','0','0','0','0','0','0','0','0','0','0','0','X'},
 	{'X','0','0','0','0','X','X','0','0','0','0','0','0','0','0','0','0','0','0','X'},
 	{'X','0','0','0','0','0','X','0','0','0','0','0','0','0','0','0','0','0','0','X'},
-	{'X','0','0','0','0','0','X','X','X','0','0','0','0','0','0','0','0','0','0','X'},
+	{'X','0','0','0','0','0','X','X','X','0','0','S','0','0','0','0','0','0','0','X'},
 	{'X','0','0','0','0','0','0','0','X','0','0','0','0','0','0','0','0','0','0','X'},
-	{'X','0','0','0','0','0','0','0','X','X','0','0','0','0','0','0','0','0','0','X'},
+	{'X','0','0','S','0','0','0','0','X','X','0','0','0','0','0','0','0','0','0','X'},
 	{'X','0','X','0','0','0','0','0','0','X','0','0','0','0','0','0','0','0','0','X'},
-	{'X','0','X','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','X'},
+	{'X','0','X','0','0','0','0','S','0','0','S','0','0','0','0','0','0','0','0','X'},
 	{'X','0','X','X','X','0','0','0','0','0','0','0','0','0','0','0','0','0','0','X'},
 	{'X','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','X'},
 	{'X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X'}
@@ -37,6 +38,14 @@ void draw_square(int x, int y, mat4 base, Model *model, GLuint program)
 {
 	mat4 model_pos = T(x, 0, y);
 	mat4 model_rot = base;
+	mat4 model_transform = Mult(model_pos, model_rot);
+	glUniformMatrix4fv(glGetUniformLocation(program, "transformMatrix"), 1, GL_TRUE, model_transform.m);
+	DrawModel(model, program, "in_vertex",  "in_normal", "in_texture");
+}
+void draw_score(int x, int y, Model *model, GLuint program)
+{
+	mat4 model_pos = T(x+0.5, 0, y+0.5);
+	mat4 model_rot = S(0.001, 0.001, 0.001);
 	mat4 model_transform = Mult(model_pos, model_rot);
 	glUniformMatrix4fv(glGetUniformLocation(program, "transformMatrix"), 1, GL_TRUE, model_transform.m);
 	DrawModel(model, program, "in_vertex",  "in_normal", "in_texture");
@@ -102,10 +111,25 @@ void move_camera(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot, float 
 		*camera_lookat = VectorAdd(*camera_lookat, SetVector(0.0, -vertical_speed, 0.0));
 		*camera_pos = VectorAdd(*camera_pos, SetVector(0.0, -vertical_speed, 0.0));  
 	}
-
+	pickup_score(camera_pos);
 	// Call cehck_position
 	// if not ok, restore value
 	// Call check objective and doors
+}
+
+// Pick a score object if standing on it
+void pickup_score(vec3* camera_pos)
+{
+	if (get_xy_cell(camera_pos->x, camera_pos->z) == 'S')
+	{
+		if ((camera_pos->x - (floor(camera_pos->x) + 0.5) < 0.1) && 
+			(camera_pos->z - (floor(camera_pos->z) + 0.5) < 0.1))
+		{
+			mazearray[(int)floor(camera_pos->x)][(int)floor(camera_pos->z)] = '0';
+			SCORE++;
+		}
+
+	}
 }
 char get_xy_cell(int x, int y)
 {
