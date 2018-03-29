@@ -16,8 +16,9 @@ out vec4 out_Color;
 void main(void)
 {	
 	
+	
 	// Define a light, might be passed as a parameter
-	vec3 light_coord = vec3(10.5, 1, 10.5);
+	vec3 light_coord = vec3(10.5, 2, 10.5);
 	//vec3 light_coord = vec3(10, 3, 10);
 	vec3 light_level = vec3(1.0, 0.95, 0.75);
 	
@@ -25,7 +26,7 @@ void main(void)
 	vec3 transfer_normal_transformed = normalize(transpose(inverse(mat3(transformMatrix)))*new_normal);
 
 	// Define reflectivity and specular exponent of material
-	float specularExponent = 20;
+	float specularExponent = 30;
 	vec3 reflectivity = vec3(1);
 
 	// Light coordinates in new coordinate system
@@ -55,7 +56,7 @@ void main(void)
 
 	vec3 specular = reflectivity*light_level*pow(max(0,dot(r, vertex_to_camera)), specularExponent);
 	vec4 texture = texture(texUnit, transfer_texture);
-	vec4 total_light = vec4((1.0 / (1.0 + (0.1 * distance * distance)))*(ambiant + diffuse + specular), 1.0);
+	vec4 total_light = vec4((1.0 / (1.0 + (0.05 * distance * distance)))*(ambiant + diffuse + specular), 1.0);
 	out_Color = vec4(texture.x*total_light.x, texture.y*total_light.y, texture.z*total_light.z, texture.w*total_light.w); 
 
 }
