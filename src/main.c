@@ -19,13 +19,13 @@
 
 
 
-#define HOR_SPEED 0.002
-#define VERT_SPEED 0.002
+#define HOR_SPEED 0.01
+#define VERT_SPEED 0.01
 #define ROT_SPEED 0.04
 
 #define PI 3.1415
 
-#define SIZE 20 // Width and height of maze
+#define SIZE 21 // Width and height of maze
 
 // Models
 Model *skybox;
