@@ -22,8 +22,8 @@ void main(void)
 {	
 	
 	// Light color
-	vec3 light_level = vec3(1.0, 0.95, 0.75);
-
+	//vec3 light_level = vec3(1.0, 0.95, 0.75);
+	vec3 light_level = vec3(1.0);
 	// Use the correct normal vectors
 	vec3 transfer_normal_transformed = transfer_normal;
 	if (bumpMap)

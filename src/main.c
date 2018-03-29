@@ -15,9 +15,6 @@
 
 
 // Globals
-// Data would normally be read from files
-
-
 
 #define HOR_SPEED 0.01
 #define VERT_SPEED 0.01
@@ -90,7 +87,7 @@ void init(void)
 	LoadTGATextureSimple("../models/TexturesCom_Cobblestone6_1024_albedo.tga", &groundTex);
 	//LoadTGATextureSimple("../models/TexturesCom_2x2_GravelwithRubble_1024_albedo.tga", &groundTex);
 	LoadTGATextureSimple("../models/TexturesCom_OldWoodPlanks_1024_albedo.tga", &doorTex);
-	LoadTGATextureSimple("../models/TexturesCom_StoneWall2_1024_albedo_red.tga", &wallTex);
+	LoadTGATextureSimple("../models/TexturesCom_StoneWall2_1024_albedo.tga", &wallTex);
 	//LoadTGATextureSimple("../models/TexturesCom_MixedMedievalBrick_1024_albedo.tga", &wallTex);
 	LoadTGATextureSimple("../models/SkyBox512.tga", &skyTex);
 	LoadTGATextureSimple("../models/wall.tga", &scoreTex);
