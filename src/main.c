@@ -24,8 +24,8 @@
 #define TOP 0.5
 #define BOTTOM -0.5
 
-#define HOR_SPEED 0.01
-#define VERT_SPEED 0.01
+#define HOR_SPEED 0.005
+#define VERT_SPEED 0.005
 #define ROT_SPEED 0.05
 
 #define PI 3.1415
@@ -46,6 +46,10 @@ GLuint skyTex;
 GLuint scoreTex;
 GLuint doorTex;
 GLuint leverTex;
+GLuint beginningTex;
+
+GLuint bumpTex;
+
 
 // Reference to shader program
 GLuint program;
@@ -89,11 +93,14 @@ void init(void)
 
 	// Load textures 
 	LoadTGATextureSimple("../models/grass.tga", &grassTex);
-	LoadTGATextureSimple("../models/wall.tga", &wallTex);
+	LoadTGATextureSimple("../models/TexturesCom_StoneWall2_1024_albedo.tga", &wallTex);
 	LoadTGATextureSimple("../models/SkyBox512.tga", &skyTex);
 	LoadTGATextureSimple("../models/wall.tga", &scoreTex);
 	LoadTGATextureSimple("../models/door.tga", &doorTex);
 	LoadTGATextureSimple("../models/door.tga", &leverTex);
+	LoadTGATextureSimple("../models/wall.tga", &beginningTex);
+	LoadTGATextureSimple("../models/TexturesCom_StoneWall2_1024_normal.tga", &bumpTex);
+
 
 	// Bind texture to GL_TEXTURE
 	glActiveTexture(GL_TEXTURE0);
@@ -108,6 +115,10 @@ void init(void)
 	glBindTexture(GL_TEXTURE_2D, doorTex);
 	glActiveTexture(GL_TEXTURE5);
 	glBindTexture(GL_TEXTURE_2D, leverTex);
+	glActiveTexture(GL_TEXTURE6);
+	glBindTexture(GL_TEXTURE_2D, beginningTex);
+	glActiveTexture(GL_TEXTURE10);
+	glBindTexture(GL_TEXTURE_2D, bumpTex);
 
 
 	// Link the texture unit by sending the id to the GPU
@@ -189,20 +200,21 @@ void display(void)
 	GLfloat pos[3] = {camera_pos.x, camera_pos.y, camera_pos.z};
 	glUniform3fv(glGetUniformLocation(program, "cameraPosition"),  1, pos);
 	
-
+	glUniform1i(glGetUniformLocation(program, "bumpUnit"), 10);
 	for (int y = 1; y < SIZE - 1; ++y)
 	{
 		for (int x = 1; x < SIZE - 1; ++x)
-		{
+		{	
 			if (has_ground(x, y))
-			
 			{
 				// Draw grass ground
 				glUniform1i(glGetUniformLocation(program, "texUnit"), 1);
-				if (get_xy_cell(x, y) != 'd') draw_square(x, y, ground_pos, model, program);
+				if (get_xy_cell(x, y) != 'd' && get_xy_cell(x, y) != 'B') draw_square(x, y, ground_pos, model, program);
 
 				// Use wall texture
 				glUniform1i(glGetUniformLocation(program, "texUnit"), 2);
+				
+
 				// Draw walls
 				if (wall_north(x, y)) draw_square(x, y, north_wall_pos, model, program);
 				if (wall_east(x, y))  draw_square(x, y, east_wall_pos,  model, program);
@@ -228,6 +240,13 @@ void display(void)
 				glUniform1i(glGetUniformLocation(program, "texUnit"), 5);
 				if (get_xy_cell(x, y) == 'L') draw_up_lever(x, y, lever, program);
 				if (get_xy_cell(x, y) == 'l') draw_down_lever(x, y, lever, program);
+
+				// Draw beggining cell
+				if (get_xy_cell(x, y) == 'B')
+				{
+					glUniform1i(glGetUniformLocation(program, "texUnit"), 6);
+					draw_square(x, y, ground_pos, model, program);
+				}
 				
 			}
 		}

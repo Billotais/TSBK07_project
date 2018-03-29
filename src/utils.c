@@ -23,7 +23,7 @@ char mazearray[SIZE][SIZE] = {
 	{'X','S','0','0','X','X','X','d','X','X','0','0','0','0','0','0','0','0','0','X'},
 	{'X','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','X'},
 	{'X','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','X'},
-	{'X','0','X','0','X','0','0','0','0','0','0','0','0','0','0','0','0','0','0','X'},
+	{'X','0','X','0','X','0','0','0','0','0','B','0','0','0','0','0','0','0','0','X'},
 	{'X','0','0','L','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','X'},
 	{'X','0','X','0','X','0','0','0','0','0','0','0','0','0','0','0','0','0','0','X'},
 	{'X','0','d','0','d','0','0','0','0','0','0','0','0','0','0','0','0','0','0','X'},
@@ -68,9 +68,20 @@ void draw_down_lever(int x, int y, Model *model, GLuint program)
 }
 void set_default_camera(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
 {
-    camera_pos->x = 0;camera_pos->y = 0.5;camera_pos->z=0.0;
-	camera_lookat->x = 0.0; camera_lookat->y = 0.5; camera_lookat->z = 5.0;
-	camera_rot->x = 0.0; camera_rot->y = 1.0; camera_rot->z = 0.0;
+	for (int x = 0; x < SIZE; ++x)
+	{
+		for (int y = 0; y < SIZE; ++y)
+		{
+			if (get_xy_cell(x, y) == 'B') 
+			{
+				camera_pos->x = x; camera_pos->y = 0.5;camera_pos->z=y;
+				camera_lookat->x = 0.0; camera_lookat->y = 0.5; camera_lookat->z = 5.0;
+				camera_rot->x = 0.0; camera_rot->y = 1.0; camera_rot->z = 0.0;
+			}
+			
+		}
+	}
+   
 } 
 void move_camera(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot, float horizontal_speed, float rotation_speed, float vertical_speed)
 {
