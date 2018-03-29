@@ -225,20 +225,13 @@ void display(void)
 				if (get_xy_cell(x, y) == 'd') draw_square(x, y, ground_pos, model, program);
 
 				// draw lever
+				glUniform1i(glGetUniformLocation(program, "texUnit"), 5);
 				if (get_xy_cell(x, y) == 'L') draw_up_lever(x, y, lever, program);
 				if (get_xy_cell(x, y) == 'l') draw_down_lever(x, y, lever, program);
 				
-				
-				
 			}
-			
-			
 		}
 	}
-	
-
-	
-
 
 	printError("display");
 	glutSwapBuffers();
@@ -250,6 +243,7 @@ int main(int argc, char *argv[])
 	glutInit(&argc, argv);
 	glutInitContextVersion(3, 2);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
+	glutInitWindowSize(1920, 1080);
 	glutCreateWindow ("TSBK07 project");
 	glutDisplayFunc(display); 
 	init ();
