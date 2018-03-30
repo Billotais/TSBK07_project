@@ -38,12 +38,13 @@ GLuint skyTex;
 GLuint scoreTex;
 GLuint doorTex;
 GLuint leverTex;
-GLuint beginningTex;
+GLuint objectiveTex;
 
 // Bump map used for normal vectors
 GLuint groundBumpTex;
 GLuint wallBumpTex;
 GLuint doorBumpTex;
+GLuint objectiveBumpTex;
 
 
 // Reference to shader program
@@ -88,16 +89,20 @@ void init(void)
 	//LoadTGATextureSimple("../models/TexturesCom_2x2_GravelwithRubble_1024_albedo.tga", &groundTex);
 	LoadTGATextureSimple("../models/TexturesCom_OldWoodPlanks_1024_albedo.tga", &doorTex);
 	LoadTGATextureSimple("../models/TexturesCom_StoneWall2_1024_albedo.tga", &wallTex);
+	
 	//LoadTGATextureSimple("../models/TexturesCom_MixedMedievalBrick_1024_albedo.tga", &wallTex);
 	LoadTGATextureSimple("../models/SkyBox512.tga", &skyTex);
 	LoadTGATextureSimple("../models/wall.tga", &scoreTex);
 	LoadTGATextureSimple("../models/door.tga", &leverTex);
-	LoadTGATextureSimple("../models/wall.tga", &beginningTex);
+	LoadTGATextureSimple("../models/TexturesCom_RustedPlates_1024_albedo.tga", &objectiveTex);
+
 	LoadTGATextureSimple("../models/TexturesCom_StoneWall2_1024_normal.tga", &wallBumpTex);
 	//LoadTGATextureSimple("../models/TexturesCom_MixedMedievalBrick_1024_normal.tga", &wallBumpTex);
 	LoadTGATextureSimple("../models/TexturesCom_OldWoodPlanks_1024_normal.tga", &doorBumpTex);
 	//LoadTGATextureSimple("../models/TexturesCom_2x2_GravelwithRubble_1024_normal.tga", &groundBumpTex);
 	LoadTGATextureSimple("../models/TexturesCom_Cobblestone6_1024_normal.tga", &groundBumpTex);
+	LoadTGATextureSimple("../models/TexturesCom_RustedPlates_1024_normal.tga", &objectiveBumpTex);
+
 	
 
 
@@ -115,7 +120,7 @@ void init(void)
 	glActiveTexture(GL_TEXTURE5);
 	glBindTexture(GL_TEXTURE_2D, leverTex);
 	glActiveTexture(GL_TEXTURE6);
-	glBindTexture(GL_TEXTURE_2D, beginningTex);
+	glBindTexture(GL_TEXTURE_2D, objectiveTex);
 
 	// Bind bump maps to GL_TEXTURE
 	glActiveTexture(GL_TEXTURE10);
@@ -124,6 +129,8 @@ void init(void)
 	glBindTexture(GL_TEXTURE_2D, doorBumpTex);
 	glActiveTexture(GL_TEXTURE12);
 	glBindTexture(GL_TEXTURE_2D, groundBumpTex);
+	glActiveTexture(GL_TEXTURE13);
+	glBindTexture(GL_TEXTURE_2D, objectiveBumpTex);
 
 
 	// GL inits
@@ -221,7 +228,8 @@ void display(void)
 				// Draw ground
 				glUniform1i(glGetUniformLocation(program, "texUnit"), 1);
 				glUniform1i(glGetUniformLocation(program, "bumpUnit"), 12);
-				if (get_xy_cell(x, y) != 'd' && get_xy_cell(x, y) != 'B') draw_square(x, y, ground_pos, model, program);
+				if (get_xy_cell(x, y) != 'd' && get_xy_cell(x, y) != 'B' && get_xy_cell(x, y) != 'E') 
+					draw_square(x, y, ground_pos, model, program);
 
 				// Draw walls
 				glUniform1i(glGetUniformLocation(program, "texUnit"), 2);
@@ -232,8 +240,8 @@ void display(void)
 				if (wall_west(x, y))  draw_square(x, y, west_wall_pos,  model, program);
 
 				// Draw doors
-				glUniform1i(glGetUniformLocation(program, "bumpUnit"), 11);
 				glUniform1i(glGetUniformLocation(program, "texUnit"), 4);
+				glUniform1i(glGetUniformLocation(program, "bumpUnit"), 11);
 				if (get_xy_cell(x+1, y) == 'D') draw_square(x, y, east_wall_pos, model, program);
 				if (get_xy_cell(x-1, y) == 'D') draw_square(x, y, west_wall_pos, model, program);
 				if (get_xy_cell(x, y+1) == 'D') draw_square(x, y, south_wall_pos, model, program);
@@ -241,9 +249,10 @@ void display(void)
 				if (get_xy_cell(x, y) == 'd') draw_square(x, y, ground_pos, model, program);
 
 				// Draw beggining cell
-				if (get_xy_cell(x, y) == 'B')
+				if (get_xy_cell(x, y) == 'B' || get_xy_cell(x, y) == 'E')
 				{
 					glUniform1i(glGetUniformLocation(program, "texUnit"), 6);
+					glUniform1i(glGetUniformLocation(program, "bumpUnit"), 13);
 					draw_square(x, y, ground_pos, model, program);
 				}
 

@@ -10,6 +10,7 @@
 // D is a door 
 // I is an interruptor
 int SCORE = 0;
+int FLAG_PICKED = 0;
 
 
 char mazearray[SIZE][SIZE] = {
@@ -22,7 +23,7 @@ char mazearray[SIZE][SIZE] = {
 	{'X','0','X','0','X','X','X','0','X','0','X','0','X','0','D','0','X','S','X','0','X'},
 	{'X','L','X','0','X','L','0','0','X','0','X','0','0','0','X','0','X','0','X','0','X'},
 	{'X','X','X','0','X','X','X','X','X','0','X','0','X','X','X','0','X','0','X','0','X'},
-	{'X','0','X','0','X','0','0','0','0','0','X','0','0','0','0','0','X','0','0','0','X'},
+	{'X','E','X','0','X','0','0','0','0','0','X','0','0','0','0','0','X','0','0','0','X'},
 	{'X','0','X','0','X','0','X','X','X','S','X','X','X','X','X','X','X','X','X','X','X'},
 	{'X','0','X','0','X','0','X','0','0','0','X','0','0','0','0','0','0','0','0','0','X'},
 	{'X','0','X','0','X','D','X','X','X','X','X','0','X','X','X','X','X','X','X','0','X'},
@@ -167,8 +168,19 @@ void move_camera(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot, float 
 	// Call cehck_position
 	// if not ok, restore value
 	// Call check objective and doors
+
+	check_flag(camera_pos);
 }
 
+
+void check_flag(vec3* camera_pos)
+{
+	if (get_xy_cell((int)floor(camera_pos->x), (int)floor(camera_pos->z)) == 'E' && !FLAG_PICKED)
+		FLAG_PICKED = 1;
+	if (get_xy_cell((int)floor(camera_pos->x), (int)floor(camera_pos->z)) == 'B' && FLAG_PICKED)
+		end_level();
+
+}
 // Pick a score object if standing on it
 void pickup_score(vec3* camera_pos)
 {
@@ -220,7 +232,7 @@ int check_wall(int x, int y)
 int has_ground(int x, int y)
 {
 	char cell = get_xy_cell(x,y);
-	if (cell=='0' || cell=='S' || cell=='I' || cell=='B' || cell=='d' || cell=='l' || cell=='L') return 1;
+	if (cell=='0' || cell=='S' || cell=='I' || cell=='B' || cell== 'E' || cell=='d' || cell=='l' || cell=='L') return 1;
 	else return 0;
 }
 
@@ -246,6 +258,14 @@ int wall_south(int x, int y)
 {
 	if (y < SIZE - 1) return check_wall(x, y+1);
 	else return 0;
+}
+int flag_picked()
+{
+	return FLAG_PICKED;
+}
+void end_level()
+{
+	exit(0);
 }
 
 

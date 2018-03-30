@@ -16,7 +16,10 @@ void set_default_camera(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
 void move_camera(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot, float horizontal_speed, float rotation_speed, float vertical_speed);
 void pickup_score(vec3* camera_pos);
 void enable_lever(vec3* camera_pos);
+void check_flag(vec3* camera_pos);
 void change_state_doors();
+int flag_picked();
+void end_level();
 // Need this, return 1 if wall at the adgacent position, 0 otherwise
 int wall_north(int x, int y);
 int wall_east(int x, int y);
