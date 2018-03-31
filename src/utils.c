@@ -40,38 +40,6 @@ char mazearray[SIZE][SIZE] = {
 };
 
 
-void draw_square(int x, int y, mat4 base, Model *model, GLuint program)
-{
-	mat4 model_pos = T(x, 0, y);
-	mat4 model_rot = base;
-	mat4 model_transform = Mult(model_pos, model_rot);
-	glUniformMatrix4fv(glGetUniformLocation(program, "transformMatrix"), 1, GL_TRUE, model_transform.m);
-	DrawModel(model, program, "in_vertex",  "in_normal", "in_texture");
-}
-void draw_score(int x, int y, Model *model, GLuint program)
-{
-	mat4 model_pos = T(x+0.5, 0, y+0.5);
-	mat4 model_scale = S(0.001, 0.001, 0.001);
-	mat4 model_transform = Mult(model_pos, model_scale);
-	glUniformMatrix4fv(glGetUniformLocation(program, "transformMatrix"), 1, GL_TRUE, model_transform.m);
-	DrawModel(model, program, "in_vertex",  "in_normal", "in_texture");
-}
-void draw_up_lever(int x, int y, Model *model, GLuint program)
-{
-	mat4 model_pos = T(x+0.5, 0.5, y+0.5);
-	mat4 model_scale = S(0.1, 0.1, 0.1);
-	mat4 model_transform = Mult(model_pos, model_scale);
-	glUniformMatrix4fv(glGetUniformLocation(program, "transformMatrix"), 1, GL_TRUE, model_transform.m);
-	DrawModel(model, program, "in_vertex",  "in_normal", "in_texture");
-}
-void draw_down_lever(int x, int y, Model *model, GLuint program)
-{
-	mat4 model_pos = T(x+0.5, 0.5, y+0.5);
-	mat4 model_scale = S(0.06, 0.06, 0.06);
-	mat4 model_transform = Mult(model_pos, model_scale);
-	glUniformMatrix4fv(glGetUniformLocation(program, "transformMatrix"), 1, GL_TRUE, model_transform.m);
-	DrawModel(model, program, "in_vertex",  "in_normal", "in_texture");
-}
 void set_default_camera(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
 {
 	for (int x = 0; x < SIZE; ++x)
@@ -80,20 +48,21 @@ void set_default_camera(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
 		{
 			if (get_xy_cell(x, y) == 'B') 
 			{
-				camera_pos->x = x+0.5; camera_pos->y = 0.5;camera_pos->z=y+0.5;
-				camera_lookat->x = 0.0; camera_lookat->y = 0.5; camera_lookat->z = 5.0;
-				camera_rot->x = 0.0; camera_rot->y = 1.0; camera_rot->z = 0.0;
+				*camera_pos = SetVector(x+0.5, 0.5, y+0.5);
+				*camera_lookat = VectorAdd(*camera_pos, SetVector(0.0, 0.0, 3));
+				*camera_rot = SetVector(0.0, 1.0, 0.0);
 			}
 			
 		}
 	}
-   
 } 
-void move_camera(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot, float horizontal_speed, float rotation_speed, float vertical_speed)
+
+void update(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot, float horizontal_speed, float rotation_speed, float vertical_speed)
 {
 	// Check if we are on a lever before moving
 	int was_on_lever = (get_xy_cell(camera_pos->x, camera_pos->z) == 'L' ||
 						get_xy_cell(camera_pos->x, camera_pos->z) == 'l');
+
 	int old_x = camera_pos->x;
 	int old_y = camera_pos->z;
 
@@ -181,11 +150,10 @@ void move_camera(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot, float 
 	// If we left a lever cell, we reset the lever to be enable again
 	if (was_on_lever && get_xy_cell(camera_pos->x, camera_pos->z) != 'l')
 	{
-		mazearray[(int)floor(old_x)][(int)floor(old_y)] = 'L';
+		set_xy_cell(old_x, old_y, 'L');
 	}
 	
-	// CHeck position
-	
+	// Check position
 }
 
 
@@ -193,9 +161,8 @@ void check_flag(vec3* camera_pos)
 {
 	if (get_xy_cell(camera_pos->x, camera_pos->z) == 'E' && !FLAG_PICKED)
 		FLAG_PICKED = 1;
-	if (get_xy_cell(camera_pos->x, camera_pos->z) == 'B' && FLAG_PICKED)
+	else if (get_xy_cell(camera_pos->x, camera_pos->z) == 'B' && FLAG_PICKED)
 		end_level();
-
 }
 // Pick a score object if standing on it
 void pickup_score(vec3* camera_pos)
@@ -205,7 +172,7 @@ void pickup_score(vec3* camera_pos)
 		if ((camera_pos->x - (floor(camera_pos->x) + 0.5) < 0.1) && 
 			(camera_pos->z - (floor(camera_pos->z) + 0.5) < 0.1))
 		{
-			mazearray[(int)floor(camera_pos->x)][(int)floor(camera_pos->z)] = '0';
+			set_xy_cell(camera_pos->x, camera_pos->z, '0');
 			SCORE++;
 		}
 
@@ -216,7 +183,7 @@ void enable_lever(vec3* camera_pos)
 	if (get_xy_cell(camera_pos->x, camera_pos->z) == 'L' && glutKeyIsDown('e'))
 	{
 		change_state_doors();
-		mazearray[(int)floor(camera_pos->x)][(int)floor(camera_pos->z)] = 'l';
+		set_xy_cell(camera_pos->x, camera_pos->z, 'l');
 	}
 }
 void change_state_doors()
@@ -230,56 +197,61 @@ void change_state_doors()
 		}
 	}
 }
-char get_xy_cell(int x, int y)
-{
-	return mazearray[(int)floor(x)][(int)floor(y)];
-}
-
-
-int check_wall(int x, int y) 
-{
-	char cell = get_xy_cell(x,y);
-	if (cell=='X') return 1;
-	else return 0;
-}
 
 int has_ground(int x, int y)
 {
 	char cell = get_xy_cell(x,y);
-	if (cell=='0' || cell=='S' || cell=='I' || cell=='B' || cell== 'E' || cell=='d' || cell=='l' || cell=='L') return 1;
-	else return 0;
+	return (cell=='0' || cell=='S' || cell=='I' || cell=='B' || cell== 'E' || cell=='d' || cell=='l' || cell=='L');
 }
 
-int wall_east(int x, int y)
-{
-	if (x < SIZE - 1) return check_wall(x+1, y);
-	else return 0;
-}
-
-int wall_north(int x, int y)
-{
-	if (y > 0) return check_wall(x, y-1);
-	else return 0;
-}
-
-int wall_west(int x, int y)
-{
-	if (x > 0) return check_wall(x-1, y);
-	else return 0;
-}
-
-int wall_south(int x, int y)
-{
-	if (y < SIZE - 1) return check_wall(x, y+1);
-	else return 0;
-}
-int flag_picked()
-{
-	return FLAG_PICKED;
-}
+void set_xy_cell(double x, double y, char cell){mazearray[(int)floor(x)][(int)floor(y)] = cell;}
+char get_xy_cell(double x, double y) 	{return mazearray[(int)floor(x)][(int)floor(y)];}
+int check_wall  (int x, int y) {return get_xy_cell(x, y) == 'X';}
+int wall_east   (int x, int y) {return (x < SIZE - 1) ? check_wall(x+1, y) : 0;}
+int wall_north  (int x, int y) {return (y > 0) ? 		check_wall(x, y-1) : 0;}
+int wall_west   (int x, int y) {return (x > 0) ?        check_wall(x-1, y) : 0;}
+int wall_south  (int x, int y) {return (y < SIZE - 1) ? check_wall(x, y+1) : 0;}
+	
+int flag_picked() {return FLAG_PICKED;}
 void end_level()
 {
 	exit(0);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+// Different drawing functions
+void draw_square(int x, int y, mat4 base, Model *model, GLuint program)
+{
+	mat4 model_pos = T(x, 0, y);
+	mat4 model_rot = base;
+	mat4 model_transform = Mult(model_pos, model_rot);
+	glUniformMatrix4fv(glGetUniformLocation(program, "transformMatrix"), 1, GL_TRUE, model_transform.m);
+	DrawModel(model, program, "in_vertex",  "in_normal", "in_texture");
+}
+void draw_score(int x, int y, Model *model, GLuint program)
+{
+	mat4 model_pos = T(x+0.5, 0, y+0.5);
+	mat4 model_scale = S(0.001, 0.001, 0.001);
+	mat4 model_transform = Mult(model_pos, model_scale);
+	glUniformMatrix4fv(glGetUniformLocation(program, "transformMatrix"), 1, GL_TRUE, model_transform.m);
+	DrawModel(model, program, "in_vertex",  "in_normal", "in_texture");
+}
+void draw_up_lever(int x, int y, Model *model, GLuint program)
+{
+	mat4 model_pos = T(x+0.5, 0.5, y+0.5);
+	mat4 model_scale = S(0.1, 0.1, 0.1);
+	mat4 model_transform = Mult(model_pos, model_scale);
+	glUniformMatrix4fv(glGetUniformLocation(program, "transformMatrix"), 1, GL_TRUE, model_transform.m);
+	DrawModel(model, program, "in_vertex",  "in_normal", "in_texture");
+}
+void draw_down_lever(int x, int y, Model *model, GLuint program)
+{
+	mat4 model_pos = T(x+0.5, 0.5, y+0.5);
+	mat4 model_scale = S(0.06, 0.06, 0.06);
+	mat4 model_transform = Mult(model_pos, model_scale);
+	glUniformMatrix4fv(glGetUniformLocation(program, "transformMatrix"), 1, GL_TRUE, model_transform.m);
+	DrawModel(model, program, "in_vertex",  "in_normal", "in_texture");
 }
 
 

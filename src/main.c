@@ -177,8 +177,8 @@ void display(void)
 	// clear the screen
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
-	// Camera coordinates, move the camera accoring to keyboard events
-	move_camera(&camera_pos, &camera_lookat, &camera_rot, HOR_SPEED, ROT_SPEED, ROT_SPEED);
+	// Main call that will update the position of the player and the state of the maze
+	update(&camera_pos, &camera_lookat, &camera_rot, HOR_SPEED, ROT_SPEED, ROT_SPEED);
 	camera = lookAtv(camera_pos, camera_lookat, camera_rot);
 	
 	// Draw the sky
