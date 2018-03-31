@@ -9,10 +9,12 @@
 // E is the end cell
 // D is a door 
 // I is an interruptor
+#define WOBBLE_HEIGHT 30
+#define WOBBLE_SPEED 0.2
 int SCORE = 0;
 int FLAG_PICKED = 0;
 
-
+double camera_bump_evolution = 0;
 char mazearray[SIZE][SIZE] = {
 	{'X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X'},
 	{'X','B','0','0','0','0','d','0','D','0','0','0','0','0','0','0','X','0','S','0','X'},
@@ -90,34 +92,41 @@ void set_default_camera(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
 void move_camera(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot, float horizontal_speed, float rotation_speed, float vertical_speed)
 {
 	// Check if we are on a lever before moving
-	int was_on_lever = (get_xy_cell((int)floor(camera_pos->x), (int)floor(camera_pos->z)) == 'L' ||
-						get_xy_cell((int)floor(camera_pos->x), (int)floor(camera_pos->z)) == 'l');
-	int old_x = floor(camera_pos->x);
-	int old_y = floor(camera_pos->z);
+	int was_on_lever = (get_xy_cell(camera_pos->x, camera_pos->z) == 'L' ||
+						get_xy_cell(camera_pos->x, camera_pos->z) == 'l');
+	int old_x = camera_pos->x;
+	int old_y = camera_pos->z;
+
+	// Used for the camera wobble effect
+	double previous_camera_bump_evolution = camera_bump_evolution;
 
 	if (glutKeyIsDown('w')) // Go forward
 	{
 		vec3 move = ScalarMult(VectorSub(*camera_lookat,*camera_pos), horizontal_speed);
 		*camera_pos = VectorAdd(*camera_pos, SetVector(move.x, 0, move.z));
 		*camera_lookat = VectorAdd(*camera_lookat, SetVector(move.x, 0, move.z));
+		camera_bump_evolution+=WOBBLE_SPEED;
 	}
 	if (glutKeyIsDown('s')) // Go backward
 	{
 		vec3 move = ScalarMult(VectorSub(*camera_lookat,*camera_pos), horizontal_speed);
 		*camera_pos = VectorAdd(*camera_pos, SetVector(-move.x, 0, -move.z));
 		*camera_lookat = VectorAdd(*camera_lookat, SetVector(-move.x, 0, -move.z));
+		camera_bump_evolution+=WOBBLE_SPEED;
 	}
 	if (glutKeyIsDown('a')) // Go left
 	{
 		vec3 move = MultVec3(Ry(PI/2),ScalarMult(VectorSub(*camera_lookat,*camera_pos), horizontal_speed));
 		*camera_pos = VectorAdd(*camera_pos, SetVector(move.x, 0, move.z));
 		*camera_lookat = VectorAdd(*camera_lookat, SetVector(move.x, 0, move.z));
+		camera_bump_evolution+=WOBBLE_SPEED;
 	}
 	if (glutKeyIsDown('d')) // Go right
 	{
 		vec3 move = MultVec3(Ry(PI/2),ScalarMult(VectorSub(*camera_lookat,*camera_pos), horizontal_speed));
 		*camera_pos = VectorAdd(*camera_pos, SetVector(-move.x, 0, -move.z));
 		*camera_lookat = VectorAdd(*camera_lookat, SetVector(-move.x, 0, -move.z));
+		camera_bump_evolution+=WOBBLE_SPEED;
 	}
 	if (glutKeyIsDown(GLUT_KEY_RIGHT)) // rotate right
 	{
@@ -143,6 +152,7 @@ void move_camera(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot, float 
 		vec3 new_cam_to_lookpoint = MultVec3(vertical_rotate, cam_to_lookpoint);
 		*camera_lookat = VectorAdd(*camera_pos, new_cam_to_lookpoint); 
 		*camera_rot = MultVec3(vertical_rotate, *camera_rot);
+		// old fly up 
 		//*camera_lookat = VectorAdd(*camera_lookat, SetVector(0.0, vertical_speed, 0.0));
 		//*camera_pos = VectorAdd(*camera_pos, SetVector(0.0, vertical_speed, 0.0));  
 	}
@@ -154,30 +164,36 @@ void move_camera(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot, float 
 		vec3 new_cam_to_lookpoint = MultVec3(vertical_rotate, cam_to_lookpoint);
 		*camera_lookat = VectorAdd(*camera_pos, new_cam_to_lookpoint); 
 		*camera_rot = MultVec3(vertical_rotate, *camera_rot);
+		// old fly down
 		//*camera_lookat = VectorAdd(*camera_lookat, SetVector(0.0, -vertical_speed, 0.0));
 		//*camera_pos = VectorAdd(*camera_pos, SetVector(0.0, -vertical_speed, 0.0));  
 	}
+
+	// Add woble to camera
+	*camera_pos = MultVec3(T(0, (sin(camera_bump_evolution) - sin(previous_camera_bump_evolution))/WOBBLE_HEIGHT, 0), *camera_pos);
+	*camera_lookat = MultVec3(T(0, (sin(camera_bump_evolution) - sin(previous_camera_bump_evolution))/WOBBLE_HEIGHT, 0), *camera_lookat);
+
+	// Check different actions
 	enable_lever(camera_pos);
 	pickup_score(camera_pos);
+	check_flag(camera_pos);
 
 	// If we left a lever cell, we reset the lever to be enable again
-	if (was_on_lever && get_xy_cell((int)floor(camera_pos->x), (int)floor(camera_pos->z)) != 'l')
+	if (was_on_lever && get_xy_cell(camera_pos->x, camera_pos->z) != 'l')
 	{
-		mazearray[old_x][old_y] = 'L';
+		mazearray[(int)floor(old_x)][(int)floor(old_y)] = 'L';
 	}
-	// Call cehck_position
-	// if not ok, restore value
-	// Call check objective and doors
-
-	check_flag(camera_pos);
+	
+	// CHeck position
+	
 }
 
 
 void check_flag(vec3* camera_pos)
 {
-	if (get_xy_cell((int)floor(camera_pos->x), (int)floor(camera_pos->z)) == 'E' && !FLAG_PICKED)
+	if (get_xy_cell(camera_pos->x, camera_pos->z) == 'E' && !FLAG_PICKED)
 		FLAG_PICKED = 1;
-	if (get_xy_cell((int)floor(camera_pos->x), (int)floor(camera_pos->z)) == 'B' && FLAG_PICKED)
+	if (get_xy_cell(camera_pos->x, camera_pos->z) == 'B' && FLAG_PICKED)
 		end_level();
 
 }
@@ -199,10 +215,8 @@ void enable_lever(vec3* camera_pos)
 {
 	if (get_xy_cell(camera_pos->x, camera_pos->z) == 'L' && glutKeyIsDown('e'))
 	{
-
 		change_state_doors();
 		mazearray[(int)floor(camera_pos->x)][(int)floor(camera_pos->z)] = 'l';
-
 	}
 }
 void change_state_doors()
@@ -218,7 +232,7 @@ void change_state_doors()
 }
 char get_xy_cell(int x, int y)
 {
-	return mazearray[x][y];
+	return mazearray[(int)floor(x)][(int)floor(y)];
 }
 
 

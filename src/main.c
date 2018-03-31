@@ -136,6 +136,8 @@ void init(void)
 	// GL inits
 	dumpInfo();
 	glClearColor(0.2,0.2,0.5,0);
+	glutHideCursor();
+	
 	//glDisable(GL_DEPTH_TEST);
 	printError("GL inits");
 
