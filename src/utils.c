@@ -154,53 +154,55 @@ void update(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot, float horiz
 	}
 	
 	// Check position
-	void check_position(vec3 *camera_pos);
+	check_position(camera_pos, camera_lookat);
 }
 //Ceck if toc lsoe to wall.
-void check_position(vec3 *camera_pos){
-float x1=0.0;
-float y1=0.0;
-int   x2,y2;
-int wall, walle, wallw, walls, walln;
+void check_position(vec3 *camera_pos, vec3 *camera_lookat){
+	
+	int walle, wallw, walls, walln;
 
-x1= floor(camer_pos->x);
-y1=floor(camera_pos->y);
-x2= (int)x1;
-y2= (int)y1;
+	float x1 = floor(camera_pos->x);
+	float y1 = floor(camera_pos->z);
+	int x2 = (int)x1;
+	int y2 = (int)y1;
 
-x1=x1-camera_pos->x;
-y1=y1-camera_pos->y;
-//make it in to an absolute number
-if (x1<0) x1=-1*x1;
-if (y1<0) y1=-1*y1;
+	x1=x1-camera_pos->x;
+	y1=y1-camera_pos->z;
 
+	//make it in to an absolute number
+	if (x1<0) x1=-1*x1;
+	if (y1<0) y1=-1*y1;
+	//x1 = abs(x1);
+	//y1 = abs(y1);
 
-//check adjacent walls
-walle=wall_east(int x2, int y2);
-wallw=wall_west(int x2, int y2);
-walls=wall_south(int x2, int y2);
-walln=wall_north(int x2, int y2);
-// see where we would have to check
+	//check adjacent walls
+	walle = wall_east(x2, y2)  || door_east(x2, y2);
+	wallw = wall_west(x2, y2)  || door_west(x2, y2);
+	walls = wall_south(x2, y2) || door_south(x2, y2);
+	walln = wall_north(x2, y2) || door_north(x2, y2);
 
-//check each wall in turn
-// If to close to a wall then move it back.
-    if (walle==1&& x1>0.9){
-        camera_pos->x=floor(camera_pos->x);
-        camera_pos->x=camera_pos->x + 0.9:
+	//check each wall in turn
+
+	double old_x = camera_pos->x; 
+	double old_y = camera_pos->z;
+
+    if (walle && x1>0.9){
+		
+        camera_pos->x = floor(camera_pos->x) + 0.9;
+		camera_lookat->x += (camera_pos->x - old_x);
     }
-    else if (wallw==1&& x1<0.1){
-        camera_pos->x=floor(camera_pos->x);
-        camera_pos->x=camera_pos->x + 0.1:
+    if (wallw && x1<0.1){
+        camera_pos->x = floor(camera_pos->x) + 0.1;
+		camera_lookat->x += (camera_pos->x - old_x);
     }
-    else if (walls==1&& y1>0.9){
-        camera_pos->y=floor(camera_pos->y);
-        camera_pos->y=camera_pos->y + 0.9:
+    if (walls && y1>0.9){
+        camera_pos->z = floor(camera_pos->z) + 0.9;
+		camera_lookat->z += (camera_pos->z - old_y);
     }
-    else if (walln==1&& y1<0.1){
-        camera_pos->y=floor(camera_pos->y);
-        camera_pos->y=camera_pos->y + 0.1:
-    }
-    else return;
+    if (walln && y1<0.1){
+        camera_pos->z = floor(camera_pos->z) + 0.1;
+		camera_lookat->z += (camera_pos->z - old_y);
+    } 
 }
 
 void check_flag(vec3* camera_pos)
@@ -257,6 +259,11 @@ int wall_east   (int x, int y) {return (x < SIZE - 1) ? check_wall(x+1, y) : 0;}
 int wall_north  (int x, int y) {return (y > 0) ? 		check_wall(x, y-1) : 0;}
 int wall_west   (int x, int y) {return (x > 0) ?        check_wall(x-1, y) : 0;}
 int wall_south  (int x, int y) {return (y < SIZE - 1) ? check_wall(x, y+1) : 0;}
+int check_door  (int x, int y) {return get_xy_cell(x, y) == 'D';}
+int door_east   (int x, int y) {return (x < SIZE - 1) ? check_door(x+1, y) : 0;}
+int door_north  (int x, int y) {return (y > 0) ? 		check_door(x, y-1) : 0;}
+int door_west   (int x, int y) {return (x > 0) ?        check_door(x-1, y) : 0;}
+int door_south  (int x, int y) {return (y < SIZE - 1) ? check_door(x, y+1) : 0;}
 	
 int flag_picked() {return FLAG_PICKED;}
 void end_level()
