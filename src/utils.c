@@ -155,6 +155,8 @@ void update(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot, float horiz
 	
 	// Check position
 	check_position(camera_pos, camera_lookat);
+	//check if at a corner 
+	check_corner(camera_pos,camera_lookat);
 }
 //Ceck if toc lsoe to wall.
 void check_position(vec3 *camera_pos, vec3 *camera_lookat){
@@ -203,6 +205,56 @@ void check_position(vec3 *camera_pos, vec3 *camera_lookat){
         camera_pos->z = floor(camera_pos->z) + 0.1;
 		camera_lookat->z += (camera_pos->z - old_y);
     } 
+}
+
+void check_corner(vec3 *camera_pos, vec3 *camera_lookat){
+float x= floor(camera_pos->x);
+float y=floor(camera_pos->y);
+int xp=(int)x+1;
+int xm=(int)x-1;
+int yp=(int)y+1;
+int xm=(int)y-1;
+x=x-camera_pos->x;
+y=y-camera_pos->y;
+//make it in to an absolute number
+if (x<0) x=-1*x1;
+if (y<0) y=-1*y1;
+double old_x = camera_pos->x;
+double old_y = camera_pos->z;
+//The different corner positions.
+// 12
+// 34
+int corner1=check_wall(xp,yp);
+int corner2=check_wall(xm,yp);
+int corner3=check_wall(xm,ym);
+int corner4=check_wall(xp,ym);
+//No doors in corners.
+
+    if(corner1==1 && x>0.9 && y>0.9 ){
+        camera_pos->x = floor(camera_pos->x) + 0.9;
+        camera_pos->z = floor(camera_pos->y) + 0.9;
+		camera_lookat->x += (camera_pos->x - old_x);
+		camera_lookat->z += (camera_pos->z - old_y);
+    }
+
+    if(corner2==1 && x<0.1 && y>0.9 ){
+        camera_pos->x = floor(camera_pos->x) + 0.1;
+        camera_pos->z = floor(camera_pos->y) + 0.9;
+		camera_lookat->x += (camera_pos->x - old_x);
+		camera_lookat->z += (camera_pos->z - old_y);
+    }
+    if(corner3==1 && x<0.1 && y<0.1 ){
+        camera_pos->x = floor(camera_pos->x) + 0.1;
+        camera_pos->z = floor(camera_pos->y) + 0.1;
+		camera_lookat->x += (camera_pos->x - old_x);
+		camera_lookat->z += (camera_pos->z - old_y);
+    }
+    if(corner4==1 && x>0.9 && y<0.1 ){
+        camera_pos->x = floor(camera_pos->x) + 0.9;
+        camera_pos->z = floor(camera_pos->y) + 0.1;
+		camera_lookat->x += (camera_pos->x - old_x);
+		camera_lookat->z += (camera_pos->z - old_y);
+    }
 }
 
 void check_flag(vec3* camera_pos)
