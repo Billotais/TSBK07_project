@@ -1,5 +1,4 @@
 
-
 #ifndef _CAMERA_UTILS_H_
 #include "MicroGlut.h"
 #include "GL_utilities.h"
@@ -27,6 +26,7 @@ int wall_south(int x, int y);
 int wall_west(int x, int y);
 char get_xy_cell(double x, double y);
 void set_xy_cell(double x, double y, char cell);
+void check_position(vec3 *camera_pos);
 
 // returns 1 if has some ground (=> only ground or ground with objective on it, start and end)
 int has_ground(int x, int y);
