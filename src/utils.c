@@ -154,8 +154,54 @@ void update(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot, float horiz
 	}
 	
 	// Check position
+	void check_position(vec3 *camera_pos);
 }
+//Ceck if toc lsoe to wall.
+void check_position(vec3 *camera_pos){
+float x1=0.0;
+float y1=0.0;
+int   x2,y2;
+int wall, walle, wallw, walls, walln;
 
+x1= floor(camer_pos->x);
+y1=floor(camera_pos->y);
+x2= (int)x1;
+y2= (int)y1;
+
+x1=x1-camera_pos->x;
+y1=y1-camera_pos->y;
+//make it in to an absolute number
+if (x1<0) x1=-1*x1;
+if (y1<0) y1=-1*y1;
+
+
+//check adjacent walls
+walle=wall_east(int x2, int y2);
+wallw=wall_west(int x2, int y2);
+walls=wall_south(int x2, int y2);
+walln=wall_north(int x2, int y2);
+// see where we would have to check
+
+//check each wall in turn
+// If to close to a wall then move it back.
+    if (walle==1&& x1>0.9){
+        camera_pos->x=floor(camera_pos->x);
+        camera_pos->x=camera_pos->x + 0.9:
+    }
+    else if (wallw==1&& x1<0.1){
+        camera_pos->x=floor(camera_pos->x);
+        camera_pos->x=camera_pos->x + 0.1:
+    }
+    else if (walls==1&& y1>0.9){
+        camera_pos->y=floor(camera_pos->y);
+        camera_pos->y=camera_pos->y + 0.9:
+    }
+    else if (walln==1&& y1<0.1){
+        camera_pos->y=floor(camera_pos->y);
+        camera_pos->y=camera_pos->y + 0.1:
+    }
+    else return;
+}
 
 void check_flag(vec3* camera_pos)
 {
