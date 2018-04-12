@@ -5,7 +5,7 @@ uniform mat4 transformMatrix;
 uniform vec3 cameraPosition;
 uniform vec3 cameraOrientation;
 
-uniform vec3 lightSources[400]; // Not yet working
+uniform vec3 lightSources[50]; // Not yet working
 uniform int lightCount; // Not yet working
 uniform bool bumpMap; // Do we use a bump_map
 
@@ -40,23 +40,25 @@ void main(void)
 	vec4 total_light = vec4(0);
 	
 	// idealy use lights given from uniform
-	int lightCount = 3; 
-	vec3 lightSources[] = {cameraPosition, vec3(1.5, 0.5, 1.5), vec3(10.5, 0.5, 10.5)};
+	//int lightCount = 2; 
+	//vec3 lightSources[] = {vec3(1.5, 0.5, 1.5), vec3(10.5, 0.5, 10.5)};
 
-	for (int i = 0; i < lightCount; ++i) // For each light
+	for (int i = 0; i <= lightCount; ++i) // For each light
 	{
-		vec3 light_transformed = lightSources[i];
+		vec3 light_transformed;
+		if (i != lightCount) light_transformed = lightSources[i];
+		if (i == lightCount) light_transformed = cameraPosition;
 		
 		vec3 vertex_to_light = normalize(light_transformed - vec3(transfer_vertex));
 		
 		// Used for attenuation (we give a higer attenuation for fixed light sources so it doeesn't bleed trgough walls)
 		float distance = length(light_transformed - vec3(transfer_vertex));
 		distance = distance*distance;
-		if (i != 0) distance = distance*distance;
+		if (i != lightCount) distance = distance*distance;
 
 		// Ambiant lighting, only for the moving light
-		vec3 ambiant = vec3(0.);
-		if (i == 0) ambiant = vec3(0.1);
+		vec3 ambiant = vec3(0.0);
+		if (i == lightCount) ambiant = vec3(0.1);
 		
 		// Diffuse component
 		float costheta = dot(transfer_normal_transformed,vertex_to_light);
@@ -76,7 +78,7 @@ void main(void)
 
 		// Spotlight effect
 		int spotlight_angle = 30;
-		if (i == 0)
+		if (i == lightCount)
 		{
 			float lightToSurfaceAngle = degrees(acos(dot(-vertex_to_light, normalize(cameraOrientation))));
 			if(lightToSurfaceAngle > 30){

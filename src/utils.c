@@ -8,7 +8,8 @@
 // B is the beggining cell
 // E is the end cell
 // D is a door 
-// I is an interruptor
+// L is an interruptor
+// + is a light
 #define WOBBLE_HEIGHT 30
 #define WOBBLE_SPEED 0.2
 int SCORE = 0;
@@ -392,6 +393,28 @@ void draw_down_lever(int x, int y, Model *model, GLuint program)
 	mat4 model_transform = Mult(model_pos, model_scale);
 	glUniformMatrix4fv(glGetUniformLocation(program, "transformMatrix"), 1, GL_TRUE, model_transform.m);
 	DrawModel(model, program, "in_vertex",  "in_normal", "in_texture");
+}
+
+void get_light_sources(GLfloat* array, int* nb)
+{
+	
+	for (int x = 0; x < SIZE; ++x)
+	{
+		for (int y = 0; y < SIZE; ++y)
+		{
+			if (get_xy_cell(x, y) == 'B' || get_xy_cell(x, y) == 'E' || 
+				get_xy_cell(x, y) == 'L' || get_xy_cell(x, y) == 'l' ||
+				get_xy_cell(x, y) == 'S')
+			{
+				array[3*(*nb)] = x + 0.5;
+				array[3*(*nb)+1] = 0.5;
+				array[3*(*nb)+2] = y + 0.5;
+				*nb = *nb + 1;
+				
+			}
+			
+		}
+	}
 }
 
 

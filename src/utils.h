@@ -18,6 +18,9 @@ void check_flag(vec3* camera_pos);
 void change_state_doors();
 int flag_picked();
 void end_level();
+
+
+void get_light_sources(GLfloat* array, int* nb);
 // Need this, return 1 if wall at the adgacent position, 0 otherwise
 
 int check_wall(int x, int y);

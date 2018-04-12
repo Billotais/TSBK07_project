@@ -24,6 +24,8 @@
 
 #define SIZE 21 // Width and height of maze
 
+
+
 // Models
 Model *skybox;
 Model *model;
@@ -153,6 +155,14 @@ void init(void)
 	glUseProgram(program_sky);
     glUniformMatrix4fv(glGetUniformLocation(program_sky, "projectionMatrix"), 1, GL_TRUE, projectionMatrix.m);
 
+	// We upload the list of light sources
+	glUseProgram(program);
+	GLfloat light_sources[50];
+	int number_light_sources = 0;
+	get_light_sources(light_sources, &number_light_sources); 
+
+	glUniform3fv(glGetUniformLocation(program, "lightSources"), number_light_sources, light_sources);
+	glUniform1i(glGetUniformLocation(program, "lightCount"), number_light_sources);
 
 	// Init default rotation :
 	north_wall_pos = Ry(0.0);
@@ -199,14 +209,7 @@ void display(void)
 	glEnable(GL_CULL_FACE);
 
 	
-	// We upload the list of light sources, doesn't work yet
-	float light_sources[] = {10.5, 0.5, 10.5, 
-							1.5, 0.5, 1.5,
-							4.5, 0.5, 14.5};
-	int number_light_sources = 3;
-	//vec3* light_sources = get_light_sources(&number_light_sources); 
-	glUniform3fv(glGetUniformLocation(program, "lightSources"), number_light_sources,  (const GLfloat*) light_sources);
-	glUniform1i(glGetUniformLocation(program, "lightCount"), number_light_sources);
+	
 
 	glUseProgram(program);
 
@@ -288,7 +291,7 @@ int main(int argc, char *argv[])
 	glutCreateWindow ("TSBK07 project");
 	glutDisplayFunc(display); 
 	init ();
-	glutTimerFunc(20, &OnTimer, 0);
+	glutTimerFunc(10, &OnTimer, 0);
 	glutMainLoop();
 	return 0;
 }
