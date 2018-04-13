@@ -15,6 +15,7 @@
 #define WOBBLE_SPEED 0.2
 int SCORE = 0;
 int FLAG_PICKED = 0;
+int current_level = 0;
 
 double camera_bump_evolution = 0;
 char mazearray[SIZE][SIZE];
@@ -125,7 +126,7 @@ void update(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot, float horiz
 	// Check different actions
 	enable_lever(camera_pos);
 	pickup_score(camera_pos);
-	check_flag(camera_pos);
+	check_flag(camera_pos, camera_lookat, camera_rot);
 
 	// If we left a lever cell, we reset the lever to be enable again
 	if (was_on_lever && get_xy_cell(camera_pos->x, camera_pos->z) != 'l')
@@ -134,9 +135,9 @@ void update(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot, float horiz
 	}
 	
 	// Check position
-	check_position(camera_pos, camera_lookat);
+	//check_position(camera_pos, camera_lookat);
 	//check if at a corner 
-	check_corner(camera_pos,camera_lookat);
+	//check_corner(camera_pos,camera_lookat);
 }
 //Ceck if toc lsoe to wall.
 void check_position(vec3 *camera_pos, vec3 *camera_lookat){
@@ -272,12 +273,12 @@ void check_corner(vec3 *camera_pos, vec3 *camera_lookat){
     }
 }
 
-void check_flag(vec3* camera_pos)
+void check_flag(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
 {
 	if (get_xy_cell(camera_pos->x, camera_pos->z) == 'E' && !FLAG_PICKED)
 		FLAG_PICKED = 1;
 	else if (get_xy_cell(camera_pos->x, camera_pos->z) == 'B' && FLAG_PICKED)
-		end_level();
+		end_level(camera_pos, camera_lookat, camera_rot);
 }
 // Pick a score object if standing on it
 void pickup_score(vec3* camera_pos)
@@ -333,9 +334,20 @@ int door_west   (int x, int y) {return (x > 0) ?        check_door(x-1, y) : 0;}
 int door_south  (int x, int y) {return (y < SIZE - 1) ? check_door(x, y+1) : 0;}
 	
 int flag_picked() {return FLAG_PICKED;}
-void end_level()
+void end_level(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
 {
-	exit(0);
+	int try = load_level(++current_level);
+	if (try >= 0)
+	{
+		SCORE = 0;
+		FLAG_PICKED = 0;
+		set_default_camera(camera_pos, camera_lookat, camera_rot);
+
+	}
+	else exit(0);
+
+
+	
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -424,6 +436,7 @@ int load_level(int i)
         }  
     }	
 	fclose(file);
+	current_level = i;
     return i;
 } 
 
