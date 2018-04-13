@@ -76,6 +76,7 @@ mat4 ground_pos;
 void init(void)
 {
 
+	set_program(&program);
 	if (load_level(0) != 0) exit(-1);
 	// Default camera position and frostum coordinates
 	mat4 projectionMatrix = perspective(90, 16.0/9.0, 0.01, 500);
@@ -158,13 +159,7 @@ void init(void)
     glUniformMatrix4fv(glGetUniformLocation(program_sky, "projectionMatrix"), 1, GL_TRUE, projectionMatrix.m);
 
 	// We upload the list of light sources
-	glUseProgram(program);
-	GLfloat light_sources[50];
-	int number_light_sources = 0;
-	get_light_sources(light_sources, &number_light_sources); 
-
-	glUniform3fv(glGetUniformLocation(program, "lightSources"), number_light_sources, light_sources);
-	glUniform1i(glGetUniformLocation(program, "lightCount"), number_light_sources);
+	set_lights();
 
 	// Init default rotation :
 	north_wall_pos = Ry(0.0);

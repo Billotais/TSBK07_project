@@ -1,4 +1,5 @@
-#ifndef _CAMERA_UTILS_H_
+#ifndef _UTILS_H_
+#define _UTILS_H_
 #include "MicroGlut.h"
 #include "GL_utilities.h"
 #include "VectorUtils3.h"
@@ -6,6 +7,7 @@
 #include "LoadTGA.h"
 #include <math.h>
 #include <stdio.h>
+
 
 void draw_square(int x, int y, mat4 base,Model *model, GLuint program);
 void draw_score(int x, int y, Model *model, GLuint program);
@@ -43,5 +45,7 @@ void check_corner(vec3 *camera_pos, vec3 *camera_lookat);
 // returns 1 if has some ground (=> only ground or ground with objective on it, start and end)
 int has_ground(int x, int y);
 
+void set_program(GLuint* program);
+void set_lights();
 
 #endif

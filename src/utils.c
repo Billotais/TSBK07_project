@@ -1,5 +1,6 @@
 #include "utils.h"
 
+
 #define PI 3.141592
 #define SIZE 21
 // X are solid walls
@@ -10,12 +11,14 @@
 // E is the end cell
 // D is a door 
 // L is an interruptor
-// + is a light
+
 #define WOBBLE_HEIGHT 30
 #define WOBBLE_SPEED 0.2
+
 int SCORE = 0;
 int FLAG_PICKED = 0;
 int current_level = 0;
+GLuint program;
 
 double camera_bump_evolution = 0;
 char mazearray[SIZE][SIZE];
@@ -342,12 +345,11 @@ void end_level(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
 		SCORE = 0;
 		FLAG_PICKED = 0;
 		set_default_camera(camera_pos, camera_lookat, camera_rot);
-
+		// Updates lights
+		set_lights();
+		
 	}
 	else exit(0);
-
-
-	
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -440,5 +442,19 @@ int load_level(int i)
     return i;
 } 
 
+void set_program(GLuint* p)
+{
+	program = *p;
+}
 
+void set_lights()
+{
+	glUseProgram(program);
+	GLfloat light_sources[50];
+	int number_light_sources = 0;
+	get_light_sources(light_sources, &number_light_sources); 
+
+	glUniform3fv(glGetUniformLocation(program, "lightSources"), number_light_sources, light_sources);
+	glUniform1i(glGetUniformLocation(program, "lightCount"), number_light_sources);
+}
 
