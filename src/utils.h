@@ -5,6 +5,7 @@
 #include "loadobj.h"
 #include "LoadTGA.h"
 #include <math.h>
+#include <stdio.h>
 
 void draw_square(int x, int y, mat4 base,Model *model, GLuint program);
 void draw_score(int x, int y, Model *model, GLuint program);
@@ -18,6 +19,7 @@ void check_flag(vec3* camera_pos);
 void change_state_doors();
 int flag_picked();
 void end_level();
+int load_level(int i);
 
 
 void get_light_sources(GLfloat* array, int* nb);

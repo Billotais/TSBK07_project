@@ -75,6 +75,8 @@ mat4 ground_pos;
 
 void init(void)
 {
+
+	if (load_level(0) != 0) exit(-1);
 	// Default camera position and frostum coordinates
 	mat4 projectionMatrix = perspective(90, 16.0/9.0, 0.01, 500);
 	set_default_camera(&camera_pos, &camera_lookat, &camera_rot);
