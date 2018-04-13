@@ -146,7 +146,7 @@ void init(void)
 	//glDisable(GL_DEPTH_TEST);
 	printError("GL inits");
 
-	// Load and compile shader
+	// Load and compile shader- Switch between first and third person view.
 	program = loadShaders("project.vert", "project.frag");
 	program_sky = loadShaders("sky.vert", "sky.frag");
 	
@@ -217,10 +217,18 @@ void display(void)
 	GLfloat dir[3] = {camera_lookat.x - camera_pos.x, camera_lookat.y - camera_pos.y, camera_lookat.z - camera_pos.z};
 	glUniform3fv(glGetUniformLocation(program, "cameraOrientation"),  1, dir);
 	
+	
+	// Simple frustum-like calling
+	int x_from = 1, x_to = SIZE-1, y_from = 1, y_to = SIZE - 1;
+	get_bounds_for_optimisation(&camera_pos, &camera_lookat, &x_from, &x_to, &y_from, &y_to);
+	
+	//printf("Number of cells covered : %d x %d\n", y_to - y_from, x_to - x_from);
+
+
 	// Go through each cell of the maze
-	for (int y = 1; y < SIZE - 1; ++y)
+	for (int y = y_from; y < y_to; ++y)
 	{
-		for (int x = 1; x < SIZE - 1; ++x)
+		for (int x = x_from; x < x_to; ++x)
 		{	
 			if (has_ground(x, y))
 			{

@@ -48,4 +48,6 @@ int has_ground(int x, int y);
 void set_program(GLuint* program);
 void set_lights();
 
+void get_bounds_for_optimisation(vec3* camera_pos, vec3* camera_lookat, int* x_from, int* x_to, int* y_from, int* y_to);
+
 #endif

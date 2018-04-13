@@ -470,4 +470,25 @@ void set_lights()
 	glUniform3fv(glGetUniformLocation(program, "lightSources"), number_light_sources, light_sources);
 	glUniform1i(glGetUniformLocation(program, "lightCount"), number_light_sources);
 }
+void get_bounds_for_optimisation(vec3* camera_pos, vec3* camera_lookat, int* x_from, int* x_to, int* y_from, int* y_to)
+{
+	vec3 cross = Normalize(CrossProduct(SetVector(1, 0, 0), Normalize(VectorSub(*camera_lookat, *camera_pos))));
+	double view_angle =  DotProduct(Normalize(VectorSub(*camera_lookat, *camera_pos)), SetVector(1, 0, 0));
+	
+
+	 // Right area
+	if (view_angle >  cos(PI/4) && view_angle <= 1) *x_from = floor(camera_pos->x)-1;
+
+	 // Left area
+	else if (view_angle >= -1 && view_angle < -cos(PI/4)) *x_to = ceil(camera_pos->x)+1;
+	
+	else if (view_angle >= -cos(PI/4) && view_angle <= cos(PI/4))
+	{
+		// Up area
+		if (DotProduct(cross, SetVector(0, 1, 0)) > 0)  *y_to = ceil(camera_pos->z)+1;
+		// Dow area
+		else *y_from = floor(camera_pos->z)-1;
+	}
+	
+}
 

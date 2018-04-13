@@ -36,7 +36,8 @@ We will make a maze game, in first-person perspective. The maze is 2D and based 
 
 #### Do later
 
-- Maze descibed by a text file, stored as a 2D array.
+- Maze descibed by a text file, stored as a 2D array. **done**
+- Multi level management **done**
 - Special graphics for the goal
 
 ### Will most likely do
@@ -48,8 +49,7 @@ We will make a maze game, in first-person perspective. The maze is 2D and based 
 
 - Enemies
 - Obstacles (Jump above a hole or fence), traps
-- Switch between first and third person view.
-- Drawing optimized
+- Drawing optimized **done with a simple calling where we only draw "half" of the maze, depending on where we look**
 - Random generated maze
 
 ### Type of blocks
