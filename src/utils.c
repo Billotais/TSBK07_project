@@ -15,13 +15,16 @@
 #define WOBBLE_HEIGHT 30
 #define WOBBLE_SPEED 0.2
 
+ALuint score_sound;
+ALuint door_sound;
+
 int SCORE = 0;
 int FLAG_PICKED = 0;
 
 int current_level = 0;
 
 // Same program as in main.c, used to uplaod the lights to the GPU
-GLuint program;
+extern GLuint program;
 
 double camera_bump_evolution = 0;
 
@@ -303,18 +306,19 @@ void pickup_score(vec3* camera_pos)
 		if ((camera_pos->x - (floor(camera_pos->x) + 0.5) < 0.1) && 
 			(camera_pos->z - (floor(camera_pos->z) + 0.5) < 0.1))
 		{
+			PlaySoundInChannel(score_sound, 0);
 			set_xy_cell(camera_pos->x, camera_pos->z, '0');
 			SCORE++;
 			// Update lights to remove the one were the score object was
 			set_lights();
 		}
-
 	}
 }
 void enable_lever(vec3* camera_pos)
 {
 	if (get_xy_cell(camera_pos->x, camera_pos->z) == 'L' && glutKeyIsDown('e'))
 	{
+		PlaySoundInChannel(door_sound, 0);
 		change_state_doors();
 		set_xy_cell(camera_pos->x, camera_pos->z, 'l');
 	}
@@ -368,7 +372,14 @@ void end_level(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
 		set_default_camera(camera_pos, camera_lookat, camera_rot);
 		set_lights();
 	}
-	else exit(0);
+	else 
+	{	// Clear sound API
+		alDeleteBuffers(1,&score_sound);
+		HaltCallMeAL();
+
+		// Exit
+		exit(0);
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -456,11 +467,6 @@ int load_level(int i)
     return i;
 } 
 
-void set_program(GLuint* p)
-{
-	program = *p;
-}
-
 void set_lights()
 {
 	glUseProgram(program);
@@ -489,5 +495,17 @@ void get_bounds_for_optimisation(vec3* camera_pos, vec3* camera_lookat, int* x_f
 		// Dow area
 		else *y_from = floor(camera_pos->z)-1;
 	}
+}
+void init_sound()
+{
+	// Init sound
+	if (!InitCallMeAL(2))
+  	{
+		printf("FAILED TO INIT OPEN AL\n");
+		exit(-1);
+  	}
+	score_sound = LoadSound("../sounds/score.wav");
+	door_sound = LoadSound("../sounds/open_door.wav");
+	
 }
 

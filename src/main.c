@@ -83,10 +83,14 @@ void reshape(GLsizei w, GLsizei h)
 
 void init(void)
 {
-	sfMakeRasterFont(); // init font
-	sfSetRasterSize(600, 200);
-	set_program(&program);
+	 // init font
+	sfMakeRasterFont();
+	
+	init_sound();
+	
+	// Try to load the level
 	if (load_level(0) != 0) exit(-1);
+
 	// Default camera position and frostum coordinates
 	mat4 projectionMatrix = perspective(90, 16.0/9.0, 0.01, 500);
 	set_default_camera(&camera_pos, &camera_lookat, &camera_rot);
@@ -194,7 +198,8 @@ void display(void)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
 
-	
+
+	//PlaySoundInChannel(score_sound, 0);
 
 	// Main call that will update the position of the player and the state of the maze
 	update(&camera_pos, &camera_lookat, &camera_rot, HOR_SPEED, ROT_SPEED, ROT_SPEED);

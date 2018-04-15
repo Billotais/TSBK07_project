@@ -7,6 +7,7 @@
 #include "LoadTGA.h"
 #include <math.h>
 #include <stdio.h>
+#include "CallMeAL.h"
 
 
 void draw_square(int x, int y, mat4 base,Model *model, GLuint program);
@@ -47,9 +48,9 @@ void check_corner(vec3 *camera_pos, vec3 *camera_lookat);
 // returns 1 if has some ground (=> only ground or ground with objective on it, start and end)
 int has_ground(int x, int y);
 
-void set_program(GLuint* program);
 void set_lights();
 
 void get_bounds_for_optimisation(vec3* camera_pos, vec3* camera_lookat, int* x_from, int* x_to, int* y_from, int* y_to);
 
+void init_sound();
 #endif
