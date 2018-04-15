@@ -351,6 +351,8 @@ int door_west   (int x, int y) {return (x > 0) ?        check_door(x-1, y) : 0;}
 int door_south  (int x, int y) {return (y < SIZE - 1) ? check_door(x, y+1) : 0;}
 	
 int flag_picked() {return FLAG_PICKED;}
+int get_score() {return SCORE;}
+int get_level() {return current_level;}
 
 void end_level(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
 {	
@@ -413,7 +415,6 @@ void get_light_sources(GLfloat* array, int* nb)
 		{	
 			// Draw lights for all special cells
 			if (get_xy_cell(x, y) == 'B' || get_xy_cell(x, y) == 'E' || 
-				get_xy_cell(x, y) == 'L' || get_xy_cell(x, y) == 'l' ||
 				get_xy_cell(x, y) == 'S')
 			{
 				array[3*(*nb)] = x + 0.5;
@@ -474,7 +475,6 @@ void get_bounds_for_optimisation(vec3* camera_pos, vec3* camera_lookat, int* x_f
 {
 	vec3 cross = Normalize(CrossProduct(SetVector(1, 0, 0), Normalize(VectorSub(*camera_lookat, *camera_pos))));
 	double view_angle =  DotProduct(Normalize(VectorSub(*camera_lookat, *camera_pos)), SetVector(1, 0, 0));
-	
 
 	 // Right area
 	if (view_angle >  cos(PI/4) && view_angle <= 1) *x_from = floor(camera_pos->x)-1;
@@ -489,6 +489,5 @@ void get_bounds_for_optimisation(vec3* camera_pos, vec3* camera_lookat, int* x_f
 		// Dow area
 		else *y_from = floor(camera_pos->z)-1;
 	}
-	
 }
 

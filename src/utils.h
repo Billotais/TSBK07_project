@@ -20,6 +20,8 @@ void enable_lever(vec3* camera_pos);
 void check_flag(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot);
 void change_state_doors();
 int flag_picked();
+int get_score();
+int get_level();
 void end_level(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot);
 int load_level(int i);
 

@@ -12,6 +12,7 @@
 #include "loadobj.h"
 #include "LoadTGA.h"
 #include "utils.h"
+#include "simplefont.h"
 
 
 // Globals
@@ -73,9 +74,17 @@ mat4 south_wall_pos;
 mat4 west_wall_pos;
 mat4 ground_pos;
 
+void reshape(GLsizei w, GLsizei h)
+{
+	// Viewport is a separate setting
+	glViewport(0, 0, w, h);
+	sfSetRasterSize(w/2, h/2);
+}
+
 void init(void)
 {
-
+	sfMakeRasterFont(); // init font
+	sfSetRasterSize(600, 200);
 	set_program(&program);
 	if (load_level(0) != 0) exit(-1);
 	// Default camera position and frostum coordinates
@@ -184,6 +193,9 @@ void display(void)
 	// clear the screen
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
+
+	
+
 	// Main call that will update the position of the player and the state of the maze
 	update(&camera_pos, &camera_lookat, &camera_rot, HOR_SPEED, ROT_SPEED, ROT_SPEED);
 	camera = lookAtv(camera_pos, camera_lookat, camera_rot);
@@ -281,7 +293,18 @@ void display(void)
 			}
 		}
 	}
+	char level_name[15];
+	sprintf(level_name, "Level : %d", get_level());
+	char score_name[15];
+	sprintf(score_name, "Score : %d", get_score());
 
+	sfDrawString(20, 40, level_name);
+	sfDrawString(20, 60, score_name);
+
+	if (flag_picked()) sfDrawString(20, 20, "Bring the flag back to the starting cell");
+	else sfDrawString(20, 20, "Find the flag");
+	
+	
 	printError("display");
 	glutSwapBuffers();
 }
@@ -295,8 +318,12 @@ int main(int argc, char *argv[])
 	glutInitWindowSize(1920, 1080);
 	glutCreateWindow ("TSBK07 project");
 	glutDisplayFunc(display); 
+	glutReshapeFunc(reshape);
 	init ();
 	glutTimerFunc(10, &OnTimer, 0);
+
+	
+
 	glutMainLoop();
 	return 0;
 }
