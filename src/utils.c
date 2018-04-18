@@ -63,6 +63,7 @@ void update(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
 
     // Move player position
 
+    // Compute how much we must move
     vec3 move = SetVector(0, 0, 0);
 
     if (glutKeyIsDown('w')) // Go forward
@@ -82,6 +83,7 @@ void update(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
         // Make the wobble evolve
         camera_bump_evolution+=WOBBLE_SPEED;
     }
+    // Update the position
 
     *camera_pos = VectorAdd(*camera_pos, SetVector(move.x, 0, move.z));
     *camera_lookat = VectorAdd(*camera_lookat, SetVector(move.x, 0, move.z));
@@ -91,7 +93,7 @@ void update(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
     vec3 cam_to_lookpoint = VectorSub(*camera_lookat,*camera_pos);
     mat4 rotation = IdentityMatrix();
     
-
+    // COmpute the rotation matrix
     if (glutKeyIsDown(GLUT_KEY_RIGHT)) // rotate right
         rotation = Mult(rotation, Ry(-rotation_speed));
     if (glutKeyIsDown(GLUT_KEY_LEFT)) // Rotate left
@@ -100,12 +102,25 @@ void update(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
         rotation = Mult(rotation, ArbRotate(CrossProduct(VectorSub(*camera_lookat,*camera_pos), *camera_rot), rotation_speed));
     if (glutKeyIsDown(GLUT_KEY_DOWN)) // Tilt down, need to restrict from going too far
         rotation = Mult(rotation, ArbRotate(CrossProduct(VectorSub(*camera_lookat,*camera_pos), *camera_rot), -rotation_speed));
-
     
+    // Keep old value if we rotate too far
+    vec3 old_lookat = *camera_lookat;
+    vec3 old_rot    = *camera_rot;
+
+    // Rotate the camera
     *camera_lookat = VectorAdd(*camera_pos, MultVec3(rotation, cam_to_lookpoint)); 
     *camera_rot = MultVec3(rotation, *camera_rot);
-    
 
+    // Check the current angle with the vertical
+    double angle_with_vert = DotProduct(Normalize(VectorSub(*camera_lookat,*camera_pos)), SetVector(0, 1, 0));
+
+    // If too small, we block the camera
+    if (angle_with_vert < -0.9 || angle_with_vert > 0.9)
+    {   
+        *camera_lookat = old_lookat;
+        *camera_rot = old_rot;
+    } 
+   
     // Add woble to camera
     *camera_pos = MultVec3(T(0, (sin(camera_bump_evolution) - sin(previous_camera_bump_evolution))/WOBBLE_HEIGHT, 0), *camera_pos);
     *camera_lookat = MultVec3(T(0, (sin(camera_bump_evolution) - sin(previous_camera_bump_evolution))/WOBBLE_HEIGHT, 0), *camera_lookat);
