@@ -20,29 +20,27 @@ We will make a maze game, in first-person perspective. The maze is 2D and based 
 ### Will do
 
 - Skybox **done**
-- Textured walls and floor and objects **Mostly done, still need to find great textures for score objects, ...**
-    Floor, walls, door, bunny
-- Collission detection camera-walls. Felix Camera position 0.1 < x < 0.9g **done**
-    - get_xy_cell(x, y) => return type of cell
-    - get_adgacent(x, y) => return type of 4 adgacents cell (N, W, S, E)
-- Simple geometry for objects, like boxes and spheres Loïs 0.45 < x < 0.55 **done, we can pick score objects**
-- First-person view **done**
-- Light sources **Almost done, fixed light in multiple cells, still need to move the list of lights from CPU to GPU**
+- Textured walls and floor and objects **Mostly done, still need to find great textures for score objects and levers, ...**
+- Collission detection camera-walls **done**
+- Simple geometry for objects, like boxes and spheres **done, we can pick score objects, flag, ...**
+- First-person view **done, with walking animation w/ and w/o flag**
+- Light sources **done, might need to reduce radius so it doesn't bleed through walls, one on player, score objects and start/end**
 - Spotlight source following the player **done**
-- Bump mapping **done**
-- Import OBJ objects Loïs **done**
-- Score objects **Almost done, we can pick them up and the score increases, but no indicator yet**
+- Normal mapping **done for flat surfaces**
+- Import OBJ objects **done**
+- Score objects **done, text indicator included**
 - Dynamic maze (open / close some walls) **done, lever will close opend doors and vice versa**
 
 #### Do later
 
 - Maze descibed by a text file, stored as a 2D array. **done**
-- Multi level management **done**
+- Multi level management **done, with automatic level switching, correct positioning and direction of player on spawn**
+- We can pick the flag and take it with us **done**
 - Special graphics for the goal
 
 ### Will most likely do
 
-- Sound effects
+- Sound effects **done, just need to find nice sounds**
 - Animation during level switching
 
 ### Might do

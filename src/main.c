@@ -324,8 +324,6 @@ int main(int argc, char *argv[])
 	init ();
 	glutTimerFunc(10, &OnTimer, 0);
 
-	
-
 	glutMainLoop();
 	return 0;
 }

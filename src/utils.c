@@ -20,8 +20,7 @@ ALuint door_sound;
 
 int SCORE = 0;
 int FLAG_PICKED = 0;
-
-int current_level = 0;
+int CURRENT_LEVEL = 0;
 
 // Same program as in main.c, used to uplaod the lights to the GPU
 extern GLuint program;
@@ -30,34 +29,13 @@ double camera_bump_evolution = 0;
 
 char mazearray[SIZE][SIZE];
 
+///////////////////////////////////////////////////////////////////
+/* Game upate and run functions
+ * Move camera, trigger levers and score, flags, ...
+ */
+///////////////////////////////////////////////////////////////////
 
-void set_default_camera(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
-{
-    for (int x = 0; x < SIZE; ++x)
-    {
-        for (int y = 0; y < SIZE; ++y)
-        {
-            // Find the start cell
-            if (get_xy_cell(x, y) == 'B') 
-            {
-                // Set the position
-                *camera_pos = SetVector(x+0.5, 0.5, y+0.5);
-
-                // Set the looking direction depending on the surounding walls
-                vec3 direction;
-                if 		(!wall_north(x, y) && !door_north(x, y)) direction = SetVector(0, 0, -3);
-                else if (!wall_east(x, y)  && !door_east(x, y))  direction = SetVector(3, 0, 0);
-                else if (!wall_south(x, y) && !door_south(x, y)) direction = SetVector(0, 0, 3);
-                else  direction = SetVector(-3, 0, 0);
-                *camera_lookat = VectorAdd(*camera_pos, direction);
-
-                *camera_rot = SetVector(0.0, 1.0, 0.0);
-            }
-            
-        }
-    }
-} 
-
+// Main function, react to keyboard, moves the camera, check for objectives and collisions
 void update(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot, float horizontal_speed, float rotation_speed, float vertical_speed)
 {
     // Check if we are on a lever before moving
@@ -158,7 +136,7 @@ void update(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot, float horiz
     }
     
 }
-//Ceck if too close to wall.
+// Check that the current position is valid, along the walls
 void check_position(vec3 *camera_pos, vec3 *camera_lookat)
 {
     
@@ -205,7 +183,7 @@ void check_position(vec3 *camera_pos, vec3 *camera_lookat)
         camera_lookat->z += (camera_pos->z - old_y);
     } 
 }
-
+// Check that the current position is valid, for the corners
 void check_corner(vec3 *camera_pos, vec3 *camera_lookat)
 {
     float x = floor(camera_pos->x);
@@ -288,7 +266,7 @@ void check_corner(vec3 *camera_pos, vec3 *camera_lookat)
         }
     }
 }
-
+// Check if the flag is picked
 void check_flag(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
 {
     // if not picked, pick it, it picked and on start cell, end level
@@ -297,8 +275,7 @@ void check_flag(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
     else if (get_xy_cell(camera_pos->x, camera_pos->z) == 'B' && FLAG_PICKED)
         end_level(camera_pos, camera_lookat, camera_rot);
 }
-
-// Pick a score object if standing on it
+// Increase score , and remove object when we pick an object
 void pickup_score(vec3* camera_pos)
 {
     if (get_xy_cell(camera_pos->x, camera_pos->z) == 'S')
@@ -314,6 +291,7 @@ void pickup_score(vec3* camera_pos)
         }
     }
 }
+// React to the action of pressing a lever
 void enable_lever(vec3* camera_pos)
 {
     if (get_xy_cell(camera_pos->x, camera_pos->z) == 'L' && glutKeyIsDown('e'))
@@ -323,6 +301,7 @@ void enable_lever(vec3* camera_pos)
         set_xy_cell(camera_pos->x, camera_pos->z, 'l');
     }
 }
+// Switch the state of doors
 void change_state_doors()
 {
     for (int x = 0; x < SIZE; ++x)
@@ -335,55 +314,198 @@ void change_state_doors()
     }
 }
 
+///////////////////////////////////////////////////////////////////
+/* Utils functions for drawing and update
+ * Optimisation, wall and door checks
+ */
+///////////////////////////////////////////////////////////////////
+
+// Tell what area of the grid should be drawn depending on the orientation of the player
+void get_bounds_for_optimisation(vec3* camera_pos, vec3* camera_lookat, int* x_from, int* x_to, int* y_from, int* y_to)
+{
+    vec3 cross = Normalize(CrossProduct(SetVector(1, 0, 0), Normalize(VectorSub(*camera_lookat, *camera_pos))));
+    double view_angle =  DotProduct(Normalize(VectorSub(*camera_lookat, *camera_pos)), SetVector(1, 0, 0));
+
+     // Right area
+    if (view_angle >  cos(PI/4) && view_angle <= 1) *x_from = floor(camera_pos->x)-1;
+
+     // Left area
+    else if (view_angle >= -1 && view_angle < -cos(PI/4)) *x_to = ceil(camera_pos->x)+1;
+    
+    else if (view_angle >= -cos(PI/4) && view_angle <= cos(PI/4))
+    {
+        // Up area
+        if (DotProduct(cross, SetVector(0, 1, 0)) > 0)  *y_to = ceil(camera_pos->z)+1;
+        // Dow area
+        else *y_from = floor(camera_pos->z)-1;
+    }
+}
+// Change the value of a cell
+void set_xy_cell(double x, double y, char cell){mazearray[(int)floor(x)][(int)floor(y)] = cell;}
+// get the value of a cell
+char get_xy_cell(double x, double y) 	       {return mazearray[(int)floor(x)][(int)floor(y)];}
+
+// Check for wall at a specific position, or next to a position
+int check_wall  (int x, int y) {return get_xy_cell(x, y) == 'X';}
+int wall_east   (int x, int y) {return (x < SIZE - 1) ? check_wall(x+1, y) : 0;}
+int wall_north  (int x, int y) {return (y > 0) ? 		check_wall(x, y-1) : 0;}
+int wall_west   (int x, int y) {return (x > 0) ?        check_wall(x-1, y) : 0;}
+int wall_south  (int x, int y) {return (y < SIZE - 1) ? check_wall(x, y+1) : 0;}
+
+// Check for door at a specific position, or next to a position
+int check_door  (int x, int y) {return get_xy_cell(x, y) == 'D';}
+int door_east   (int x, int y) {return (x < SIZE - 1) ? check_door(x+1, y) : 0;}
+int door_north  (int x, int y) {return (y > 0) ? 		check_door(x, y-1) : 0;}
+int door_west   (int x, int y) {return (x > 0) ?        check_door(x-1, y) : 0;}
+int door_south  (int x, int y) {return (y < SIZE - 1) ? check_door(x, y+1) : 0;}
+
+// Tell if we need to draw a ground
 int has_ground(int x, int y)
 {
     char cell = get_xy_cell(x,y);
     return (cell=='0' || cell=='S' || cell=='I' || cell=='B' || cell== 'E' || cell=='d' || cell=='l' || cell=='L');
 }
 
-void set_xy_cell(double x, double y, char cell){mazearray[(int)floor(x)][(int)floor(y)] = cell;}
-char get_xy_cell(double x, double y) 	{return mazearray[(int)floor(x)][(int)floor(y)];}
-int check_wall  (int x, int y) {return get_xy_cell(x, y) == 'X';}
-int wall_east   (int x, int y) {return (x < SIZE - 1) ? check_wall(x+1, y) : 0;}
-int wall_north  (int x, int y) {return (y > 0) ? 		check_wall(x, y-1) : 0;}
-int wall_west   (int x, int y) {return (x > 0) ?        check_wall(x-1, y) : 0;}
-int wall_south  (int x, int y) {return (y < SIZE - 1) ? check_wall(x, y+1) : 0;}
-int check_door  (int x, int y) {return get_xy_cell(x, y) == 'D';}
-int door_east   (int x, int y) {return (x < SIZE - 1) ? check_door(x+1, y) : 0;}
-int door_north  (int x, int y) {return (y > 0) ? 		check_door(x, y-1) : 0;}
-int door_west   (int x, int y) {return (x > 0) ?        check_door(x-1, y) : 0;}
-int door_south  (int x, int y) {return (y < SIZE - 1) ? check_door(x, y+1) : 0;}
-    
+// Simple getter functions
 int flag_picked() {return FLAG_PICKED;}
-int get_score() {return SCORE;}
-int get_level() {return current_level;}
+int get_score()   {return SCORE;}
+int get_level()   {return CURRENT_LEVEL;}
 
-void end_level(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
-{	
-    // Try to go to the next level
-    int try = load_level(++current_level);
-    if (try >= 0) // If there is a next level
+///////////////////////////////////////////////////////////////////
+/* Initialisation functions
+ * For camera, sound level...
+ */
+///////////////////////////////////////////////////////////////////
+
+// Put the camera at the start cell in the adequate position
+void set_default_camera(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
+{
+    for (int x = 0; x < SIZE; ++x)
     {
-        // reset some values
-        SCORE = 0;
-        FLAG_PICKED = 0;
-        // reset the camera and light positions
-        set_default_camera(camera_pos, camera_lookat, camera_rot);
-        set_lights();
-    }
-    else 
-    {	// Clear sound API
-        alDeleteBuffers(1,&score_sound);
-        HaltCallMeAL();
+        for (int y = 0; y < SIZE; ++y)
+        {
+            // Find the start cell
+            if (get_xy_cell(x, y) == 'B') 
+            {
+                // Set the position
+                *camera_pos = SetVector(x+0.5, 0.5, y+0.5);
 
-        // Exit
-        exit(0);
+                // Set the looking direction depending on the surounding walls
+                vec3 direction;
+                if 		(!wall_north(x, y) && !door_north(x, y)) direction = SetVector(0, 0, -3);
+                else if (!wall_east(x, y)  && !door_east(x, y))  direction = SetVector(3, 0, 0);
+                else if (!wall_south(x, y) && !door_south(x, y)) direction = SetVector(0, 0, 3);
+                else  direction = SetVector(-3, 0, 0);
+                *camera_lookat = VectorAdd(*camera_pos, direction);
+
+                *camera_rot = SetVector(0.0, 1.0, 0.0);
+            }
+            
+        }
+    }
+} 
+// Initialize sound API
+void init_sound()
+{
+    // Init sound
+    if (!InitCallMeAL(2))
+    {
+        printf("FAILED TO INIT OPEN AL\n");
+        exit(-1);
+    }
+    // Load all sounds
+    score_sound = LoadSound("../sounds/score.wav");
+    door_sound = LoadSound("../sounds/open_door.wav"); 
+}
+// Load a given level into memory
+int load_level(int i)
+{
+    // Open the file
+    char file_name[18];
+    sprintf(file_name, "../levels/level_%d", i);
+    FILE* file = fopen(file_name, "r");
+    if (file == NULL) return -1;
+
+    int curr_row = 0;
+    int curr_col = 0;
+    char next_char;
+    
+    // read while there is something
+    while ((next_char = getc(file)) != EOF)
+    {
+        if (next_char == '\n') // If new line => new row
+        {
+            curr_row++;
+            curr_col=0;
+        }
+        else // Else read character
+        {	
+            mazearray[curr_col][curr_row] = next_char;
+            curr_col++;
+        }  
+    }	
+    fclose(file);
+    CURRENT_LEVEL = i;
+    return i;
+} 
+
+////////////////////////////////////////////////////////////////////////////
+/* Drawing functions
+ * For the 3D objects, lights
+ * And for the interface
+ */
+////////////////////////////////////////////////////////////////////////////
+
+// return location of all light sources
+void get_light_sources(GLfloat* array, int* nb)
+{
+    for (int x = 0; x < SIZE; ++x)
+    {
+        for (int y = 0; y < SIZE; ++y)
+        {	
+            // Draw lights for all special cells
+            if (get_xy_cell(x, y) == 'B' || get_xy_cell(x, y) == 'E' || 
+                get_xy_cell(x, y) == 'S')
+            {
+                array[3*(*nb)] = x + 0.5;
+                array[3*(*nb)+1] = 0.5;
+                array[3*(*nb)+2] = y + 0.5;
+                *nb = *nb + 1;
+            }	
+        }
     }
 }
+// Get and upload light sources to GPU
+void set_lights()
+{
+    glUseProgram(program);
+    GLfloat light_sources[50];
+    int number_light_sources = 0;
 
-///////////////////////////////////////////////////////////////////////////////
+    // Get the lights
+    get_light_sources(light_sources, &number_light_sources); 
 
-// Different drawing functions
+    // Upload them to the GPU
+    glUniform3fv(glGetUniformLocation(program, "lightSources"), number_light_sources, light_sources);
+    glUniform1i(glGetUniformLocation(program, "lightCount"), number_light_sources);
+}
+// Draw UI text
+void draw_text()
+{
+    // Create strings for each texts
+    char level_name[15];
+    sprintf(level_name, "Level : %d", get_level());
+    char score_name[15];
+    sprintf(score_name, "Score : %d/3", get_score());
+
+    // Draw them
+    sfDrawString(20, 40, level_name);
+    sfDrawString(20, 60, score_name);
+
+    if (flag_picked()) sfDrawString(20, 20, "Bring the flag back to the starting cell");
+    else sfDrawString(20, 20, "Find the flag");
+}
+// Draw a square using base matrix
 void draw_square(int x, int y, mat4 base, Model *model, GLuint program)
 {
     mat4 model_pos = T(x, 0, y);
@@ -392,6 +514,7 @@ void draw_square(int x, int y, mat4 base, Model *model, GLuint program)
     glUniformMatrix4fv(glGetUniformLocation(program, "transformMatrix"), 1, GL_TRUE, model_transform.m);
     DrawModel(model, program, "in_vertex",  "in_normal", "in_texture");
 }
+// Draw a score object
 void draw_score(int x, int y, Model *model, GLuint program)
 {
     mat4 model_pos = T(x+0.5, 0, y+0.5);
@@ -400,6 +523,7 @@ void draw_score(int x, int y, Model *model, GLuint program)
     glUniformMatrix4fv(glGetUniformLocation(program, "transformMatrix"), 1, GL_TRUE, model_transform.m);
     DrawModel(model, program, "in_vertex",  "in_normal", "in_texture");
 }
+// Draw the lever in its non-trigger position
 void draw_up_lever(int x, int y, Model *model, GLuint program)
 {
     mat4 model_pos = T(x+0.5, 0.5, y+0.5);
@@ -408,6 +532,7 @@ void draw_up_lever(int x, int y, Model *model, GLuint program)
     glUniformMatrix4fv(glGetUniformLocation(program, "transformMatrix"), 1, GL_TRUE, model_transform.m);
     DrawModel(model, program, "in_vertex",  "in_normal", "in_texture");
 }
+// Draw the lever in its trigger positeion
 void draw_down_lever(int x, int y, Model *model, GLuint program)
 {
     mat4 model_pos = T(x+0.5, 0.5, y+0.5);
@@ -416,6 +541,7 @@ void draw_down_lever(int x, int y, Model *model, GLuint program)
     glUniformMatrix4fv(glGetUniformLocation(program, "transformMatrix"), 1, GL_TRUE, model_transform.m);
     DrawModel(model, program, "in_vertex",  "in_normal", "in_texture");
 }
+// Draw the flag, either on the end cell or with the player
 void draw_flag(double x, double z, double y, Model *model, GLuint program, vec3* camera_pos, vec3* camera_lookat)
 {
     mat4 model_pos;
@@ -451,114 +577,28 @@ void draw_flag(double x, double z, double y, Model *model, GLuint program, vec3*
     
 }
 
-void get_light_sources(GLfloat* array, int* nb)
-{
-    for (int x = 0; x < SIZE; ++x)
+//////////////////////////////////////////////////////////////
+
+// End the vel, go to the next one
+void end_level(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
+{	
+    // Try to go to the next level
+    int try = load_level(++CURRENT_LEVEL);
+    if (try >= 0) // If there is a next level
     {
-        for (int y = 0; y < SIZE; ++y)
-        {	
-            // Draw lights for all special cells
-            if (get_xy_cell(x, y) == 'B' || get_xy_cell(x, y) == 'E' || 
-                get_xy_cell(x, y) == 'S')
-            {
-                array[3*(*nb)] = x + 0.5;
-                array[3*(*nb)+1] = 0.5;
-                array[3*(*nb)+2] = y + 0.5;
-                *nb = *nb + 1;
-            }	
-        }
+        // reset some values
+        SCORE = 0;
+        FLAG_PICKED = 0;
+        // reset the camera and light positions
+        set_default_camera(camera_pos, camera_lookat, camera_rot);
+        set_lights();
     }
-}
+    else 
+    {	// Clear sound API
+        alDeleteBuffers(1,&score_sound);
+        HaltCallMeAL();
 
-int load_level(int i)
-{
-    // Open the file
-    char file_name[18];
-    sprintf(file_name, "../levels/level_%d", i);
-    FILE* file = fopen(file_name, "r");
-    if (file == NULL) return -1;
-
-    int curr_row = 0;
-    int curr_col = 0;
-    char next_char;
-    
-    // read while there is something
-    while ((next_char = getc(file)) != EOF)
-    {
-        if (next_char == '\n') // If new line => new row
-        {
-            curr_row++;
-            curr_col=0;
-        }
-        else // Else read character
-        {	
-            mazearray[curr_col][curr_row] = next_char;
-            curr_col++;
-        }  
-    }	
-    fclose(file);
-    current_level = i;
-    return i;
-} 
-
-void set_lights()
-{
-    glUseProgram(program);
-    GLfloat light_sources[50];
-    int number_light_sources = 0;
-
-    // Get the lights
-    get_light_sources(light_sources, &number_light_sources); 
-
-    // Upload them to the GPU
-    glUniform3fv(glGetUniformLocation(program, "lightSources"), number_light_sources, light_sources);
-    glUniform1i(glGetUniformLocation(program, "lightCount"), number_light_sources);
-}
-void get_bounds_for_optimisation(vec3* camera_pos, vec3* camera_lookat, int* x_from, int* x_to, int* y_from, int* y_to)
-{
-    vec3 cross = Normalize(CrossProduct(SetVector(1, 0, 0), Normalize(VectorSub(*camera_lookat, *camera_pos))));
-    double view_angle =  DotProduct(Normalize(VectorSub(*camera_lookat, *camera_pos)), SetVector(1, 0, 0));
-
-     // Right area
-    if (view_angle >  cos(PI/4) && view_angle <= 1) *x_from = floor(camera_pos->x)-1;
-
-     // Left area
-    else if (view_angle >= -1 && view_angle < -cos(PI/4)) *x_to = ceil(camera_pos->x)+1;
-    
-    else if (view_angle >= -cos(PI/4) && view_angle <= cos(PI/4))
-    {
-        // Up area
-        if (DotProduct(cross, SetVector(0, 1, 0)) > 0)  *y_to = ceil(camera_pos->z)+1;
-        // Dow area
-        else *y_from = floor(camera_pos->z)-1;
+        // Exit
+        exit(0);
     }
-}
-void init_sound()
-{
-    // Init sound
-    if (!InitCallMeAL(2))
-    {
-        printf("FAILED TO INIT OPEN AL\n");
-        exit(-1);
-    }
-    // Load all sounds
-    score_sound = LoadSound("../sounds/score.wav");
-    door_sound = LoadSound("../sounds/open_door.wav");
-    
-}
-
-void draw_text()
-{
-    // Create strings for each texts
-    char level_name[15];
-    sprintf(level_name, "Level : %d", get_level());
-    char score_name[15];
-    sprintf(score_name, "Score : %d/3", get_score());
-
-    // Draw them
-    sfDrawString(20, 40, level_name);
-    sfDrawString(20, 60, score_name);
-
-    if (flag_picked()) sfDrawString(20, 20, "Bring the flag back to the starting cell");
-    else sfDrawString(20, 20, "Find the flag");
 }
