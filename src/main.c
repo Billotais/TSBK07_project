@@ -43,6 +43,7 @@ GLuint scoreTex;
 GLuint doorTex;
 GLuint leverTex;
 GLuint objectiveTex;
+GLuint flagTex;
 
 // Bump map used for normal vectors
 GLuint groundBumpTex;
@@ -101,7 +102,7 @@ void init(void)
 	skybox = LoadModelPlus("../models/skybox.obj");
 	score = LoadModelPlus("../models/can.obj");
 	lever = LoadModelPlus("../models/bunnyplus.obj");
-	flag = LoadModelPlus("../models/flag.obj");
+	flag = LoadModelPlus("../models/trophy.obj");
 	//flag=lever;
 	// Load textures and bump maps
 	
@@ -112,6 +113,7 @@ void init(void)
 	LoadTGATextureSimple("../models/wall.tga", &scoreTex);
 	LoadTGATextureSimple("../models/door.tga", &leverTex);
 	LoadTGATextureSimple("../models/TexturesCom_RustedPlates_1024_albedo.tga", &objectiveTex);
+	LoadTGATextureSimple("../models/TexturesCom_OldWoodPlanks_1024_albedo.tga", &flagTex);
 
 	LoadTGATextureSimple("../models/TexturesCom_StoneWall2_1024_normal.tga", &wallBumpTex);
 	LoadTGATextureSimple("../models/TexturesCom_OldWoodPlanks_1024_normal.tga", &doorBumpTex);
@@ -136,6 +138,8 @@ void init(void)
 	glBindTexture(GL_TEXTURE_2D, leverTex);
 	glActiveTexture(GL_TEXTURE6);
 	glBindTexture(GL_TEXTURE_2D, objectiveTex);
+	glActiveTexture(GL_TEXTURE7);
+	glBindTexture(GL_TEXTURE_2D, flagTex);
 
 	// Bind bump maps to GL_TEXTURE
 	glActiveTexture(GL_TEXTURE10);
@@ -238,7 +242,6 @@ void display(void)
 	
 	//printf("Number of cells covered : %d x %d\n", y_to - y_from, x_to - x_from);
 
-
 	// Go through each cell of the maze
 	for (int y = y_from; y < y_to; ++y)
 	{
@@ -284,16 +287,11 @@ void display(void)
 				// Now we don't want to use bump mapping for props
 				glUniform1i(glGetUniformLocation(program, "bumpMap"), false);
 
-				glUniform1i(glGetUniformLocation(program, "texUnit"), 3);
-				if (get_xy_cell(x, y) == 'E' && !flag_picked())
-				{
-					draw_flag(x+0.5, 0, y+0.5, flag, program);
-				}
-				if (flag_picked())
-				{
-					vec3 dir = MultVec3(Ry(0.5),VectorSub(camera_lookat, camera_pos));
-					draw_flag(camera_pos.x+dir.x/10.0, camera_pos.y-0.5, camera_pos.z+dir.z/10.0, flag, program);
-				}
+				// Draw the flag
+				glUniform1i(glGetUniformLocation(program, "texUnit"), 7);
+				if (get_xy_cell(x, y) == 'E' || flag_picked())
+					draw_flag(x, 0, y, flag, program, &camera_pos, &camera_lookat);
+				
 				// Show score objects
 				glUniform1i(glGetUniformLocation(program, "texUnit"), 3);
 				if (get_xy_cell(x, y) == 'S') draw_score(x, y, score, program);

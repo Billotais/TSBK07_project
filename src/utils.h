@@ -8,8 +8,9 @@
 #include <math.h>
 #include <stdio.h>
 #include "CallMeAL.h"
+#include "simplefont.h"
 
-void draw_flag(double x, double z, double y, Model *model, GLuint program);
+void draw_flag(double x, double z, double y, Model *model, GLuint program, vec3* camera_pos, vec3* camera_lookat);
 void draw_square(int x, int y, mat4 base,Model *model, GLuint program);
 void draw_score(int x, int y, Model *model, GLuint program);
 void draw_up_lever(int x, int y, Model *model, GLuint program);
