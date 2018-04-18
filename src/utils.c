@@ -60,6 +60,9 @@ void update(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
     // Used for the camera wobble effect
     double previous_camera_bump_evolution = camera_bump_evolution;
 
+
+    // Move player position
+
     vec3 move = SetVector(0, 0, 0);
 
     if (glutKeyIsDown('w')) // Go forward
@@ -71,7 +74,7 @@ void update(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
     if (glutKeyIsDown('d')) // Go right
         move = VectorAdd(move, MultVec3(Ry(PI/2),VectorSub(*camera_pos,*camera_lookat)));
 
-    // if we had a move
+    // if we had a move, to prevent segfault when normalizing
     if (move.x != 0 || move.y != 0 || move.z != 0) 
     {
         // Scale it so we don't go faster if two keys pressed
@@ -83,42 +86,25 @@ void update(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
     *camera_pos = VectorAdd(*camera_pos, SetVector(move.x, 0, move.z));
     *camera_lookat = VectorAdd(*camera_lookat, SetVector(move.x, 0, move.z));
 
+    // Move player view
+
+    vec3 cam_to_lookpoint = VectorSub(*camera_lookat,*camera_pos);
+    mat4 rotation = IdentityMatrix();
+    
+
     if (glutKeyIsDown(GLUT_KEY_RIGHT)) // rotate right
-    {
-        
-        vec3 cam_to_lookpoint = VectorSub(*camera_lookat,*camera_pos);
-        vec3 new_cam_to_lookpoint = MultVec3(Ry(-rotation_speed), cam_to_lookpoint);
-        *camera_lookat = VectorAdd(*camera_pos, new_cam_to_lookpoint); 
-        *camera_rot = MultVec3(Ry(-rotation_speed), *camera_rot);
-    }
+        rotation = Mult(rotation, Ry(-rotation_speed));
     if (glutKeyIsDown(GLUT_KEY_LEFT)) // Rotate left
-    {
-        
-        vec3 cam_to_lookpoint = VectorSub(*camera_lookat,*camera_pos);
-        vec3 new_cam_to_lookpoint = MultVec3(Ry(rotation_speed), cam_to_lookpoint);
-        *camera_lookat = VectorAdd(*camera_pos, new_cam_to_lookpoint); 
-        *camera_rot = MultVec3(Ry(rotation_speed), *camera_rot);
-    }
+        rotation = Mult(rotation, Ry(rotation_speed));
     if (glutKeyIsDown(GLUT_KEY_UP)) // Tilt up, need to restrict from going too far
-    {
-        mat4 vertical_rotate = ArbRotate(CrossProduct(VectorSub(*camera_lookat,*camera_pos), *camera_rot), rotation_speed);
-        
-        vec3 cam_to_lookpoint = VectorSub(*camera_lookat,*camera_pos);
-        vec3 new_cam_to_lookpoint = MultVec3(vertical_rotate, cam_to_lookpoint);
-        *camera_lookat = VectorAdd(*camera_pos, new_cam_to_lookpoint); 
-        *camera_rot = MultVec3(vertical_rotate, *camera_rot);
-         
-    }
+        rotation = Mult(rotation, ArbRotate(CrossProduct(VectorSub(*camera_lookat,*camera_pos), *camera_rot), rotation_speed));
     if (glutKeyIsDown(GLUT_KEY_DOWN)) // Tilt down, need to restrict from going too far
-    {
-        mat4 vertical_rotate = ArbRotate(CrossProduct(VectorSub(*camera_lookat,*camera_pos), *camera_rot), -rotation_speed);
-        
-        vec3 cam_to_lookpoint = VectorSub(*camera_lookat,*camera_pos);
-        vec3 new_cam_to_lookpoint = MultVec3(vertical_rotate, cam_to_lookpoint);
-        *camera_lookat = VectorAdd(*camera_pos, new_cam_to_lookpoint); 
-        *camera_rot = MultVec3(vertical_rotate, *camera_rot);
-        
-    }
+        rotation = Mult(rotation, ArbRotate(CrossProduct(VectorSub(*camera_lookat,*camera_pos), *camera_rot), -rotation_speed));
+
+    
+    *camera_lookat = VectorAdd(*camera_pos, MultVec3(rotation, cam_to_lookpoint)); 
+    *camera_rot = MultVec3(rotation, *camera_rot);
+    
 
     // Add woble to camera
     *camera_pos = MultVec3(T(0, (sin(camera_bump_evolution) - sin(previous_camera_bump_evolution))/WOBBLE_HEIGHT, 0), *camera_pos);
