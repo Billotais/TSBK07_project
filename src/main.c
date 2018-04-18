@@ -247,6 +247,9 @@ void display(void)
 		{	
 			if (has_ground(x, y))
 			{
+				// Upload current cell data to GPU to optimise lightning
+				glUniform1i(glGetUniformLocation(program, "x"), x);
+				glUniform1i(glGetUniformLocation(program, "y"), y);
 				// For the following draws, we will use the bump map
 				glUniform1i(glGetUniformLocation(program, "bumpMap"), true);
 

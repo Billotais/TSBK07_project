@@ -5,12 +5,15 @@ uniform mat4 transformMatrix;
 uniform vec3 cameraPosition;
 uniform vec3 cameraOrientation;
 
-uniform vec3 lightSources[50]; // Not yet working
-uniform int lightCount; // Not yet working
+uniform vec3 lightSources[50];
+uniform int lightCount; 
 uniform bool bumpMap; // Do we use a bump_map
 
 uniform sampler2D texUnit; // Texture color
 uniform sampler2D bumpUnit; // Texture normal
+
+uniform int x;
+uniform int y;
 
 in vec3 transfer_normal;
 in vec4 transfer_vertex;
@@ -39,14 +42,16 @@ void main(void)
 
 	vec4 total_light = vec4(0);
 	
-	// idealy use lights given from uniform
-	//int lightCount = 2; 
-	//vec3 lightSources[] = {vec3(1.5, 0.5, 1.5), vec3(10.5, 0.5, 10.5)};
-
 	for (int i = 0; i <= lightCount; ++i) // For each light
 	{
 		vec3 light_transformed;
-		if (i != lightCount) light_transformed = lightSources[i];
+		if (i != lightCount) // Fixed light
+		{
+			light_transformed = lightSources[i];
+			// For optimisation, only compute for squares that are close enough
+			if (abs(floor(light_transformed.x) - x) + abs(floor(light_transformed.z) - y) > 2) continue;
+		}
+		// Spotlight light
 		if (i == lightCount) light_transformed = cameraPosition;
 		
 		vec3 vertex_to_light = normalize(light_transformed - vec3(transfer_vertex));
@@ -54,7 +59,8 @@ void main(void)
 		// Used for attenuation (we give a higer attenuation for fixed light sources so it doeesn't bleed trgough walls)
 		float distance = length(light_transformed - vec3(transfer_vertex));
 		distance = distance*distance;
-		if (i != lightCount) distance = distance*distance;
+		// fixed light has a quick fade-out
+		if (i != lightCount) distance = 3*distance*distance;
 
 		// Ambiant lighting, only for the moving light
 		vec3 ambiant = vec3(0.0);
@@ -76,7 +82,7 @@ void main(void)
 		// Attenutation
 		float attenuation = (1.0 / (1.0 + (0.05 * distance * distance)));
 
-		// Spotlight effect
+		// Spotlight effect, for the moving light
 		int spotlight_angle = 30;
 		if (i == lightCount)
 		{

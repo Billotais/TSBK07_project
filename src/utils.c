@@ -476,7 +476,7 @@ void get_light_sources(GLfloat* array, int* nb)
         {	
             // Draw lights for all special cells
             if (get_xy_cell(x, y) == 'B' || (get_xy_cell(x, y) == 'E' && !flag_picked()) || 
-                get_xy_cell(x, y) == 'S')
+                get_xy_cell(x, y) == 'S' || get_xy_cell(x, y) == 'L')
             {
                 array[3*(*nb)] = x + 0.5;
                 array[3*(*nb)+1] = 0.3;
