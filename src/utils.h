@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include "CallMeAL.h"
 
-
+void draw_flag(double x, double z, double y, Model *model, GLuint program);
 void draw_square(int x, int y, mat4 base,Model *model, GLuint program);
 void draw_score(int x, int y, Model *model, GLuint program);
 void draw_up_lever(int x, int y, Model *model, GLuint program);
@@ -25,6 +25,7 @@ int get_score();
 int get_level();
 void end_level(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot);
 int load_level(int i);
+void draw_text();
 
 
 void get_light_sources(GLfloat* array, int* nb);

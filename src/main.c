@@ -32,6 +32,7 @@ Model *skybox;
 Model *model;
 Model *score;
 Model *lever;
+Model *flag;
 
 
 // Textures
@@ -100,24 +101,20 @@ void init(void)
 	skybox = LoadModelPlus("../models/skybox.obj");
 	score = LoadModelPlus("../models/can.obj");
 	lever = LoadModelPlus("../models/bunnyplus.obj");
-
+	flag = LoadModelPlus("../models/flag.obj");
+	//flag=lever;
 	// Load textures and bump maps
 	
 	LoadTGATextureSimple("../models/TexturesCom_Cobblestone6_1024_albedo.tga", &groundTex);
-	//LoadTGATextureSimple("../models/TexturesCom_2x2_GravelwithRubble_1024_albedo.tga", &groundTex);
 	LoadTGATextureSimple("../models/TexturesCom_OldWoodPlanks_1024_albedo.tga", &doorTex);
 	LoadTGATextureSimple("../models/TexturesCom_StoneWall2_1024_albedo.tga", &wallTex);
-	
-	//LoadTGATextureSimple("../models/TexturesCom_MixedMedievalBrick_1024_albedo.tga", &wallTex);
 	LoadTGATextureSimple("../models/SkyBox512.tga", &skyTex);
 	LoadTGATextureSimple("../models/wall.tga", &scoreTex);
 	LoadTGATextureSimple("../models/door.tga", &leverTex);
 	LoadTGATextureSimple("../models/TexturesCom_RustedPlates_1024_albedo.tga", &objectiveTex);
 
 	LoadTGATextureSimple("../models/TexturesCom_StoneWall2_1024_normal.tga", &wallBumpTex);
-	//LoadTGATextureSimple("../models/TexturesCom_MixedMedievalBrick_1024_normal.tga", &wallBumpTex);
 	LoadTGATextureSimple("../models/TexturesCom_OldWoodPlanks_1024_normal.tga", &doorBumpTex);
-	//LoadTGATextureSimple("../models/TexturesCom_2x2_GravelwithRubble_1024_normal.tga", &groundBumpTex);
 	LoadTGATextureSimple("../models/TexturesCom_Cobblestone6_1024_normal.tga", &groundBumpTex);
 	LoadTGATextureSimple("../models/TexturesCom_RustedPlates_1024_normal.tga", &objectiveBumpTex);
 
@@ -282,10 +279,21 @@ void display(void)
 					glUniform1i(glGetUniformLocation(program, "bumpUnit"), 13);
 					draw_square(x, y, ground_pos, model, program);
 				}
+				
 
 				// Now we don't want to use bump mapping for props
 				glUniform1i(glGetUniformLocation(program, "bumpMap"), false);
 
+				glUniform1i(glGetUniformLocation(program, "texUnit"), 3);
+				if (get_xy_cell(x, y) == 'E' && !flag_picked())
+				{
+					draw_flag(x+0.5, 0, y+0.5, flag, program);
+				}
+				if (flag_picked())
+				{
+					vec3 dir = MultVec3(Ry(0.5),VectorSub(camera_lookat, camera_pos));
+					draw_flag(camera_pos.x+dir.x/10.0, camera_pos.y-0.5, camera_pos.z+dir.z/10.0, flag, program);
+				}
 				// Show score objects
 				glUniform1i(glGetUniformLocation(program, "texUnit"), 3);
 				if (get_xy_cell(x, y) == 'S') draw_score(x, y, score, program);
@@ -298,16 +306,7 @@ void display(void)
 			}
 		}
 	}
-	char level_name[15];
-	sprintf(level_name, "Level : %d", get_level());
-	char score_name[15];
-	sprintf(score_name, "Score : %d", get_score());
-
-	sfDrawString(20, 40, level_name);
-	sfDrawString(20, 60, score_name);
-
-	if (flag_picked()) sfDrawString(20, 20, "Bring the flag back to the starting cell");
-	else sfDrawString(20, 20, "Find the flag");
+	draw_text();
 	
 	
 	printError("display");

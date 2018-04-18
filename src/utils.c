@@ -417,6 +417,16 @@ void draw_down_lever(int x, int y, Model *model, GLuint program)
 	glUniformMatrix4fv(glGetUniformLocation(program, "transformMatrix"), 1, GL_TRUE, model_transform.m);
 	DrawModel(model, program, "in_vertex",  "in_normal", "in_texture");
 }
+void draw_flag(double x, double z, double y, Model *model, GLuint program)
+{
+	mat4 model_pos = T(x, z, y);
+	mat4 model_scale = S(0.02, 0.02, 0.02);
+	mat4 model_transform = Mult(model_pos, model_scale);
+	
+	glUniformMatrix4fv(glGetUniformLocation(program, "transformMatrix"), 1, GL_TRUE, model_transform.m);
+	DrawModel(model, program, "in_vertex",  "in_normal", "in_texture");
+	
+}
 
 void get_light_sources(GLfloat* array, int* nb)
 {
@@ -507,5 +517,19 @@ void init_sound()
 	score_sound = LoadSound("../sounds/score.wav");
 	door_sound = LoadSound("../sounds/open_door.wav");
 	
+}
+
+void draw_text()
+{
+	char level_name[15];
+	sprintf(level_name, "Level : %d", get_level());
+	char score_name[15];
+	sprintf(score_name, "Score : %d/3", get_score());
+
+	sfDrawString(20, 40, level_name);
+	sfDrawString(20, 60, score_name);
+
+	if (flag_picked()) sfDrawString(20, 20, "Bring the flag back to the starting cell");
+	else sfDrawString(20, 20, "Find the flag");
 }
 
