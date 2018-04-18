@@ -17,9 +17,7 @@
 
 // Globals
 
-#define HOR_SPEED 0.01
-#define VERT_SPEED 0.01
-#define ROT_SPEED 0.04
+
 
 #define PI 3.1415
 
@@ -203,7 +201,7 @@ void display(void)
 	//PlaySoundInChannel(score_sound, 0);
 
 	// Main call that will update the position of the player and the state of the maze
-	update(&camera_pos, &camera_lookat, &camera_rot, HOR_SPEED, ROT_SPEED, ROT_SPEED);
+	update(&camera_pos, &camera_lookat, &camera_rot);
 	camera = lookAtv(camera_pos, camera_lookat, camera_rot);
 	
 	// Draw the sky
@@ -304,7 +302,8 @@ void display(void)
 			}
 		}
 	}
-	draw_text();
+	draw_text(&camera_pos);
+	
 	
 	
 	printError("display");

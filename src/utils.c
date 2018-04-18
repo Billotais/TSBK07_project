@@ -14,6 +14,11 @@
 
 #define WOBBLE_HEIGHT 30
 #define WOBBLE_SPEED 0.2
+#define DIST_TO_WALL 0.1
+
+#define HOR_SPEED 0.007
+#define VERT_SPEED 0.01
+#define ROT_SPEED 0.04
 
 ALuint score_sound;
 ALuint door_sound;
@@ -36,8 +41,15 @@ char mazearray[SIZE][SIZE];
 ///////////////////////////////////////////////////////////////////
 
 // Main function, react to keyboard, moves the camera, check for objectives and collisions
-void update(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot, float horizontal_speed, float rotation_speed, float vertical_speed)
+void update(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
 {
+    float horizontal_speed = HOR_SPEED; 
+    float rotation_speed = ROT_SPEED;
+    float vertical_speed = VERT_SPEED;
+
+    // Allow faster travel for debugging and demonstration purpose
+    if (glutKeyIsDown('c')) horizontal_speed = 2*HOR_SPEED;
+    
     // Check if we are on a lever before moving
     int was_on_lever = (get_xy_cell(camera_pos->x, camera_pos->z) == 'L' ||
                         get_xy_cell(camera_pos->x, camera_pos->z) == 'l');
@@ -166,20 +178,20 @@ void check_position(vec3 *camera_pos, vec3 *camera_lookat)
     double old_y = camera_pos->z;
 
     // Correct position of too close
-    if (walle && x1>0.9){
-        camera_pos->x = floor(camera_pos->x) + 0.9;
+    if (walle && x1>(1-DIST_TO_WALL)){
+        camera_pos->x = floor(camera_pos->x) + (1-DIST_TO_WALL);
         camera_lookat->x += (camera_pos->x - old_x);
     }
-    if (wallw && x1<0.1){
-        camera_pos->x = floor(camera_pos->x) + 0.1;
+    if (wallw && x1<DIST_TO_WALL){
+        camera_pos->x = floor(camera_pos->x) + DIST_TO_WALL;
         camera_lookat->x += (camera_pos->x - old_x);
     }
-    if (walls && y1>0.9){
-        camera_pos->z = floor(camera_pos->z) + 0.9;
+    if (walls && y1>(1-DIST_TO_WALL)){
+        camera_pos->z = floor(camera_pos->z) + (1-DIST_TO_WALL);
         camera_lookat->z += (camera_pos->z - old_y);
     }
-    if (walln && y1<0.1){
-        camera_pos->z = floor(camera_pos->z) + 0.1;
+    if (walln && y1<DIST_TO_WALL){
+        camera_pos->z = floor(camera_pos->z) + DIST_TO_WALL;
         camera_lookat->z += (camera_pos->z - old_y);
     } 
 }
@@ -209,59 +221,59 @@ void check_corner(vec3 *camera_pos, vec3 *camera_lookat)
     //No doors in corners.
 
     // Check the four different corners
-    if(corner1 && x>0.9 && y>0.9 )
+    if(corner1 && x>(1-DIST_TO_WALL) && y>(1-DIST_TO_WALL) )
     {
         if (x > y)
         {
-            camera_pos->z = floor(camera_pos->z) + 0.9;
+            camera_pos->z = floor(camera_pos->z) + (1-DIST_TO_WALL);
             camera_lookat->z += (camera_pos->z - old_y);
         }
         else
         {
-            camera_pos->x = floor(camera_pos->x) + 0.9;
+            camera_pos->x = floor(camera_pos->x) + (1-DIST_TO_WALL);
             camera_lookat->x += (camera_pos->x - old_x);
         }
     }
 
-    else if(corner2 && x<0.1 && y>0.9 )
+    else if(corner2 && x<DIST_TO_WALL && y>(1-DIST_TO_WALL) )
     {
         if ((1-x) > y)
         {
-            camera_pos->z = floor(camera_pos->z) + 0.9;
+            camera_pos->z = floor(camera_pos->z) + (1-DIST_TO_WALL);
             camera_lookat->z += (camera_pos->z - old_y);
         }
        
         else
         {
-            camera_pos->x = floor(camera_pos->x) + 0.1;
+            camera_pos->x = floor(camera_pos->x) + DIST_TO_WALL;
             camera_lookat->x += (camera_pos->x - old_x);
         }
     }
-    else if(corner3 && x<0.1 && y<0.1 )
+    else if(corner3 && x<DIST_TO_WALL && y<DIST_TO_WALL )
     {
         if (x < y)
         {
-            camera_pos->z = floor(camera_pos->z) + 0.1;
+            camera_pos->z = floor(camera_pos->z) + DIST_TO_WALL;
             camera_lookat->z += (camera_pos->z - old_y);
         }
        
         else
         {
-            camera_pos->x = floor(camera_pos->x) + 0.1;
+            camera_pos->x = floor(camera_pos->x) + DIST_TO_WALL;
             camera_lookat->x += (camera_pos->x - old_x);
         }
     }
-    else if(corner4 && x>0.9 && y<0.1 )
+    else if(corner4 && x>(1-DIST_TO_WALL) && y<DIST_TO_WALL )
     {
         if (x > (1-y))
         {
-            camera_pos->z = floor(camera_pos->z) + 0.1;
+            camera_pos->z = floor(camera_pos->z) + DIST_TO_WALL;
             camera_lookat->z += (camera_pos->z - old_y);
         }
        
         else
         {
-            camera_pos->x = floor(camera_pos->x) + 0.9;
+            camera_pos->x = floor(camera_pos->x) + (1-DIST_TO_WALL);
             camera_lookat->x += (camera_pos->x - old_x);
         }
     }
@@ -271,7 +283,10 @@ void check_flag(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
 {
     // if not picked, pick it, it picked and on start cell, end level
     if (get_xy_cell(camera_pos->x, camera_pos->z) == 'E' && !FLAG_PICKED)
+    {
         FLAG_PICKED = 1;
+        set_lights();
+    }
     else if (get_xy_cell(camera_pos->x, camera_pos->z) == 'B' && FLAG_PICKED)
         end_level(camera_pos, camera_lookat, camera_rot);
 }
@@ -464,11 +479,11 @@ void get_light_sources(GLfloat* array, int* nb)
         for (int y = 0; y < SIZE; ++y)
         {	
             // Draw lights for all special cells
-            if (get_xy_cell(x, y) == 'B' || get_xy_cell(x, y) == 'E' || 
+            if (get_xy_cell(x, y) == 'B' || (get_xy_cell(x, y) == 'E' && !flag_picked()) || 
                 get_xy_cell(x, y) == 'S')
             {
                 array[3*(*nb)] = x + 0.5;
-                array[3*(*nb)+1] = 0.5;
+                array[3*(*nb)+1] = 0.3;
                 array[3*(*nb)+2] = y + 0.5;
                 *nb = *nb + 1;
             }	
@@ -490,7 +505,7 @@ void set_lights()
     glUniform1i(glGetUniformLocation(program, "lightCount"), number_light_sources);
 }
 // Draw UI text
-void draw_text()
+void draw_text(vec3* camera_pos)
 {
     // Create strings for each texts
     char level_name[15];
@@ -502,8 +517,12 @@ void draw_text()
     sfDrawString(20, 40, level_name);
     sfDrawString(20, 60, score_name);
 
-    if (flag_picked()) sfDrawString(20, 20, "Bring the flag back to the starting cell");
-    else sfDrawString(20, 20, "Find the flag");
+    if (flag_picked()) sfDrawString(20, 20, "Bring the cup back to the starting cell");
+    else sfDrawString(20, 20, "Find the cup");
+
+    // Draw information about interaction
+    if (get_xy_cell(camera_pos->x, camera_pos->z) == 'L') sfDrawString(480, 200, "E");
+
 }
 // Draw a square using base matrix
 void draw_square(int x, int y, mat4 base, Model *model, GLuint program)
@@ -546,29 +565,38 @@ void draw_flag(double x, double z, double y, Model *model, GLuint program, vec3*
 {
     mat4 model_pos;
     mat4 model_rot;
+    mat4 model_scale;
 
     if (flag_picked())
     {
         // Displacement compared to the camera position
-        vec3 dir = MultVec3(Ry(0.5),VectorSub(*camera_lookat, *camera_pos));
-        double x_ = camera_pos->x+dir.x/10.0;
-        double y_ = camera_pos->y-0.2;
-        double z_ = camera_pos->z+dir.z/10.0;
+        vec3 diff = VectorSub(*camera_lookat, *camera_pos);
+        vec3 dir = Normalize(MultVec3(Ry(0.5),SetVector(diff.x, 0, diff.z)));
 
+        double x_ = camera_pos->x+dir.x/15.0;
+        double y_ = camera_pos->y-0.04;
+        double z_ = camera_pos->z+dir.z/15.0;
+
+        vec3 flag_pos = SetVector(x_, y_, z_);
+        vec3 flag_lookat = SetVector(0, 0, 0);
+        check_position(&flag_pos, &flag_lookat);
+        check_corner(&flag_pos, &flag_lookat);
         // We add a wobble to give a nicer effect
-        model_pos = T(x_, y_ + sin(camera_bump_evolution+3)/(3*WOBBLE_HEIGHT), z_);
+        model_pos = T(flag_pos.x, flag_pos.y + sin(camera_bump_evolution+3)/(8*WOBBLE_HEIGHT), flag_pos.z);
 
         // Compute the current absolute angle of the player to rotate the flag in the correct orientation
         double angle = acos(DotProduct(Normalize(VectorSub(*camera_lookat, *camera_pos)), SetVector(0, 0, 1)));
         if (DotProduct(Normalize(VectorSub(*camera_lookat, *camera_pos)), SetVector(1, 0, 0)) < 0) angle = -angle;
         model_rot = Ry(angle);
+        model_scale = S(0.01, 0.01, 0.01);
     } 
     else // Just put it on the end cell
     {
         model_pos = T(x+0.5, z+0.1, y+0.5);
         model_rot = Ry(0);
+        model_scale = S(0.04, 0.04, 0.04);
     }
-    mat4 model_scale = S(0.04, 0.04, 0.04);
+   
     
     mat4 model_transform = Mult(model_pos, Mult(model_rot, model_scale));
     

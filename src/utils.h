@@ -16,7 +16,7 @@ void draw_score(int x, int y, Model *model, GLuint program);
 void draw_up_lever(int x, int y, Model *model, GLuint program);
 void draw_down_lever(int x, int y, Model *model, GLuint program);
 void set_default_camera(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot);
-void update(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot, float horizontal_speed, float rotation_speed, float vertical_speed);
+void update(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot);
 void pickup_score(vec3* camera_pos);
 void enable_lever(vec3* camera_pos);
 void check_flag(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot);
@@ -26,7 +26,8 @@ int get_score();
 int get_level();
 void end_level(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot);
 int load_level(int i);
-void draw_text();
+void draw_text(vec3* camera_pos);
+
 
 
 void get_light_sources(GLfloat* array, int* nb);
