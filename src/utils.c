@@ -16,9 +16,9 @@
 #define WOBBLE_SPEED 0.2
 #define DIST_TO_WALL 0.1
 
-#define HOR_SPEED 0.007
+#define HOR_SPEED 0.02
 #define VERT_SPEED 0.01
-#define ROT_SPEED 0.04
+#define ROT_SPEED 0.03
 
 ALuint score_sound;
 ALuint door_sound;
@@ -60,34 +60,29 @@ void update(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
     // Used for the camera wobble effect
     double previous_camera_bump_evolution = camera_bump_evolution;
 
+    vec3 move = SetVector(0, 0, 0);
+
     if (glutKeyIsDown('w')) // Go forward
-    {
-        vec3 move = ScalarMult(VectorSub(*camera_lookat,*camera_pos), horizontal_speed);
-        *camera_pos = VectorAdd(*camera_pos, SetVector(move.x, 0, move.z));
-        *camera_lookat = VectorAdd(*camera_lookat, SetVector(move.x, 0, move.z));
-        camera_bump_evolution+=WOBBLE_SPEED;
-    }
+        move = VectorAdd(move, VectorSub(*camera_lookat,*camera_pos));
     if (glutKeyIsDown('s')) // Go backward
-    {
-        vec3 move = ScalarMult(VectorSub(*camera_lookat,*camera_pos), horizontal_speed);
-        *camera_pos = VectorAdd(*camera_pos, SetVector(-move.x, 0, -move.z));
-        *camera_lookat = VectorAdd(*camera_lookat, SetVector(-move.x, 0, -move.z));
-        camera_bump_evolution+=WOBBLE_SPEED;
-    }
+        move = VectorAdd(move, VectorSub(*camera_pos,*camera_lookat));
     if (glutKeyIsDown('a')) // Go left
-    {
-        vec3 move = MultVec3(Ry(PI/2),ScalarMult(VectorSub(*camera_lookat,*camera_pos), horizontal_speed));
-        *camera_pos = VectorAdd(*camera_pos, SetVector(move.x, 0, move.z));
-        *camera_lookat = VectorAdd(*camera_lookat, SetVector(move.x, 0, move.z));
-        camera_bump_evolution+=WOBBLE_SPEED;
-    }
+        move = VectorAdd(move, MultVec3(Ry(PI/2),VectorSub(*camera_lookat,*camera_pos)));
     if (glutKeyIsDown('d')) // Go right
+        move = VectorAdd(move, MultVec3(Ry(PI/2),VectorSub(*camera_pos,*camera_lookat)));
+
+    // if we had a move
+    if (move.x != 0 || move.y != 0 || move.z != 0) 
     {
-        vec3 move = MultVec3(Ry(PI/2),ScalarMult(VectorSub(*camera_lookat,*camera_pos), horizontal_speed));
-        *camera_pos = VectorAdd(*camera_pos, SetVector(-move.x, 0, -move.z));
-        *camera_lookat = VectorAdd(*camera_lookat, SetVector(-move.x, 0, -move.z));
+        // Scale it so we don't go faster if two keys pressed
+        move = ScalarMult(Normalize(move), horizontal_speed);
+        // Make the wobble evolve
         camera_bump_evolution+=WOBBLE_SPEED;
     }
+
+    *camera_pos = VectorAdd(*camera_pos, SetVector(move.x, 0, move.z));
+    *camera_lookat = VectorAdd(*camera_lookat, SetVector(move.x, 0, move.z));
+
     if (glutKeyIsDown(GLUT_KEY_RIGHT)) // rotate right
     {
         
@@ -571,7 +566,8 @@ void draw_flag(double x, double z, double y, Model *model, GLuint program, vec3*
     {
         // Displacement compared to the camera position
         vec3 diff = VectorSub(*camera_lookat, *camera_pos);
-        vec3 dir = Normalize(MultVec3(Ry(0.5),SetVector(diff.x, 0, diff.z)));
+        diff = SetVector(diff.x, 0, diff.z);
+        vec3 dir = Normalize(MultVec3(Ry(0.5),diff));
 
         double x_ = camera_pos->x+dir.x/15.0;
         double y_ = camera_pos->y-0.04;
@@ -585,8 +581,9 @@ void draw_flag(double x, double z, double y, Model *model, GLuint program, vec3*
         model_pos = T(flag_pos.x, flag_pos.y + sin(camera_bump_evolution+3)/(8*WOBBLE_HEIGHT), flag_pos.z);
 
         // Compute the current absolute angle of the player to rotate the flag in the correct orientation
-        double angle = acos(DotProduct(Normalize(VectorSub(*camera_lookat, *camera_pos)), SetVector(0, 0, 1)));
-        if (DotProduct(Normalize(VectorSub(*camera_lookat, *camera_pos)), SetVector(1, 0, 0)) < 0) angle = -angle;
+        double angle = acos(DotProduct(Normalize(diff), SetVector(0, 0, 1)));
+        if (DotProduct(Normalize(diff), SetVector(1, 0, 0)) < 0) angle = -angle;
+        //printf("angle : %f\n", angle);
         model_rot = Ry(angle);
         model_scale = S(0.01, 0.01, 0.01);
     } 
