@@ -24,7 +24,7 @@ We will make a maze game, in first-person perspective. The maze is 2D and based 
 - Collission detection camera-walls **done**
 - Simple geometry for objects, like boxes and spheres **done, we can pick score objects, flag, ...**
 - First-person view **done, with walking animation w/ and w/o flag**
-- Light sources **done, might need to reduce radius so it doesn't bleed through walls, one on player, score objects and start/end, updates when objects in the maze move**
+- Light sources **done, one on player, score objects, levers and start/end, updates when objects in the maze change, optimized to only applied to close enough cells**
 - Spotlight source following the player **done**
 - Normal mapping **done for flat surfaces**
 - Import OBJ objects **done**
@@ -48,7 +48,7 @@ We will make a maze game, in first-person perspective. The maze is 2D and based 
 
 - Enemies
 - Obstacles (Jump above a hole or fence), traps
-- Drawing optimized **done with a simple calling where we only draw "half" of the maze, depending on where we look**
+- Drawing optimized **done with a simple calling where we only draw "half" of the maze, depending on where we look, want to try more advanced optimization**
 - Random generated maze
 
 ### Type of blocks
