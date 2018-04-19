@@ -377,19 +377,19 @@ void flood_from_position(int x, int y, int count, vec3* camera_pos, vec3* camera
 
     // unless Right area, go left with flood
     if (!look_right && !right) 
-        flood_from_position(x-1, y, count+1, camera_pos, camera_lookat, up, left+1, right, down);
+        flood_from_position(x-1, y, count+1, camera_pos, camera_lookat, up, 1, right, down);
 
      // unless Left area, go right with flood
     if (!look_left && !left) 
-        flood_from_position(x+1, y, count+1, camera_pos, camera_lookat, up, left, right+1, down);
+        flood_from_position(x+1, y, count+1, camera_pos, camera_lookat, up, left, 1, down);
         
      // unless up area, go down with flood
     if (!look_up && !up)
-        flood_from_position(x, y+1, count+1,camera_pos, camera_lookat, up, left, right, down+1);
+        flood_from_position(x, y+1, count+1,camera_pos, camera_lookat, up, left, right, 1);
     
     // unless down area, go up with flood
     if (!look_down && !down) 
-       flood_from_position(x, y-1, count+1, camera_pos, camera_lookat, up+1, left, right, down);
+       flood_from_position(x, y-1, count+1, camera_pos, camera_lookat, 1, left, right, down);
 
 }
 int is_flood(int x, int y)
