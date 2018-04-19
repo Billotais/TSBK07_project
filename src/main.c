@@ -18,6 +18,8 @@
 // Globals
 
 
+double total_cell = 0;
+double total_count = 0;
 
 #define PI 3.1415
 
@@ -232,19 +234,17 @@ void display(void)
 	glUniform3fv(glGetUniformLocation(program, "cameraOrientation"),  1, dir);
 	
 	
-	// Simple frustum-like calling
 	int x_from = 1, x_to = SIZE-1, y_from = 1, y_to = SIZE - 1;
-	get_bounds_for_optimisation(&camera_pos, &camera_lookat, &x_from, &x_to, &y_from, &y_to);
-	
-	//printf("Number of cells covered : %d x %d\n", y_to - y_from, x_to - x_from);
 	
 	// Go through each cell of the maze
+	int count = 0;
 	for (int y = y_from; y < y_to; ++y)
 	{
 		for (int x = x_from; x < x_to; ++x)
 		{	
 			if (has_ground(x, y) && is_flood(x, y))
 			{
+				count++;
 				// Upload current cell data to GPU to optimise lightning
 				glUniform1i(glGetUniformLocation(program, "x"), x);
 				glUniform1i(glGetUniformLocation(program, "y"), y);
@@ -303,9 +303,23 @@ void display(void)
 			}
 		}
 	}
+
+	// for demonstration purposes
+
+	total_cell += (double)count/4.41;
+	total_count += 1;
+
+	char stats[50];
+	sprintf(stats, "%d/441 cells drawn, = %.2f%%", count, (double)count/4.41);
+	sfDrawString(650, 20, stats);
+
+	char stats_avg[50];
+	sprintf(stats_avg, "Average : %.2f%%", total_cell/total_count);
+	sfDrawString(650, 40, stats_avg);
+
+	
+
 	draw_text(&camera_pos);
-	
-	
 	
 	printError("display");
 	glutSwapBuffers();

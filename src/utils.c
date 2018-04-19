@@ -20,6 +20,8 @@
 #define VERT_SPEED 0.01
 #define ROT_SPEED 0.03
 
+#define FLOOD_SIZE 0.75*SIZE
+
 ALuint score_sound;
 ALuint door_sound;
 
@@ -47,6 +49,13 @@ char mazearray_flood[SIZE][SIZE];
 // Main function, react to keyboard, moves the camera, check for objectives and collisions
 void update(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
 {
+    if (!glutKeyIsDown('q'))
+    {
+        reset_flood();
+        flood_from_position((int)floor(camera_pos->x),(int)floor(camera_pos->z),0, camera_pos, camera_lookat, 0, 0, 0, 0);
+        set_lights();
+    }
+    
     float horizontal_speed = HOR_SPEED; 
     float rotation_speed = ROT_SPEED;
     float vertical_speed = VERT_SPEED;
@@ -315,13 +324,6 @@ void enable_lever(vec3* camera_pos)
         PlaySoundInChannel(door_sound, 0);
         change_state_doors();
         set_xy_cell(camera_pos->x, camera_pos->z, 'l');
-
-        // Compute accessible cells
-        reset_flood();
-        flood_from_position((int)floor(camera_pos->x),(int)floor(camera_pos->z));
-
-        // Redraw the lights for the new sections
-        set_lights();
     }
 }
 // Switch the state of doors
@@ -349,28 +351,6 @@ void change_state_doors()
  */
 ///////////////////////////////////////////////////////////////////
 
-// Tell what area of the grid should be drawn depending on the orientation of the player
-void get_bounds_for_optimisation(vec3* camera_pos, vec3* camera_lookat, int* x_from, int* x_to, int* y_from, int* y_to)
-{
-    vec3 cross = Normalize(CrossProduct(SetVector(1, 0, 0), Normalize(VectorSub(*camera_lookat, *camera_pos))));
-    double view_angle =  DotProduct(Normalize(VectorSub(*camera_lookat, *camera_pos)), SetVector(1, 0, 0));
-
-     // Right area
-    if (view_angle >  cos(PI/4) && view_angle <= 1) *x_from = floor(camera_pos->x)-1;
-
-     // Left area
-    else if (view_angle >= -1 && view_angle < -cos(PI/4)) *x_to = ceil(camera_pos->x)+1;
-        
-    
-    else if (view_angle >= -cos(PI/4) && view_angle <= cos(PI/4))
-    {
-        // Up area
-        if (DotProduct(cross, SetVector(0, 1, 0)) > 0) *y_to = ceil(camera_pos->z)+1;
-            
-        // Down area
-        else *y_from = floor(camera_pos->z)-1;    
-    }
-}
 
 // Flood functions
 
@@ -380,14 +360,37 @@ void reset_flood()
         for (int y = 0; y < SIZE; ++y)
             mazearray_flood[x][y] = mazearray[x][y];
 }
-void flood_from_position(int x, int y)
-{
+void flood_from_position(int x, int y, int count, vec3* camera_pos, vec3* camera_lookat, int up, int left, int right, int down)
+
+{   if (count > FLOOD_SIZE) return;
     if (mazearray_flood[x][y] == 'F' || mazearray_flood[x][y] == 'D' || mazearray_flood[x][y] == 'X') return;   
     mazearray_flood[x][y] = 'F';
-    flood_from_position(x, y-1);
-    flood_from_position(x, y+1);
-    flood_from_position(x+1, y);
-    flood_from_position(x-1, y);
+
+
+    vec3 cross = Normalize(CrossProduct(SetVector(1, 0, 0), Normalize(VectorSub(*camera_lookat, *camera_pos))));
+    double view_angle =  DotProduct(Normalize(VectorSub(*camera_lookat, *camera_pos)), SetVector(1, 0, 0));
+
+    int look_up = (view_angle >= -cos(PI/4) && view_angle <= cos(PI/4) && DotProduct(cross, SetVector(0, 1, 0)) > 0);
+    int look_down = (view_angle >= -cos(PI/4) && view_angle <= cos(PI/4) && DotProduct(cross, SetVector(0, 1, 0)) < 0);
+    int look_left = (view_angle >= -1 && view_angle < -cos(PI/4));
+    int look_right = (view_angle >  cos(PI/4) && view_angle <= 1);
+
+    // unless Right area, go left with flood
+    if (!look_right && !right) 
+        flood_from_position(x-1, y, count+1, camera_pos, camera_lookat, up, left+1, right, down);
+
+     // unless Left area, go right with flood
+    if (!look_left && !left) 
+        flood_from_position(x+1, y, count+1, camera_pos, camera_lookat, up, left, right+1, down);
+        
+     // unless up area, go down with flood
+    if (!look_up && !up)
+        flood_from_position(x, y+1, count+1,camera_pos, camera_lookat, up, left, right, down+1);
+    
+    // unless down area, go up with flood
+    if (!look_down && !down) 
+       flood_from_position(x, y-1, count+1, camera_pos, camera_lookat, up+1, left, right, down);
+
 }
 int is_flood(int x, int y)
 {
@@ -441,8 +444,8 @@ void set_default_camera(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
             // Find the start cell
             if (get_xy_cell(x, y) == 'B') 
             {
-                reset_flood();
-                flood_from_position(x, y);
+                //reset_flood();
+                //flood_from_position(x, y, 0, camera_pos, camera_lookat, 0, 0, 0, 0);
                 // Set the position
                 *camera_pos = SetVector(x+0.5, 0.5, y+0.5);
 

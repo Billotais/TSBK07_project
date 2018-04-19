@@ -53,11 +53,9 @@ int has_ground(int x, int y);
 
 void set_lights();
 
-void get_bounds_for_optimisation(vec3* camera_pos, vec3* camera_lookat, int* x_from, int* x_to, int* y_from, int* y_to);
-
 void init_sound();
 
-int is_flood(x, y);
-void flood_from_position(int x, int y);
+int is_flood(int x, int y);
+void flood_from_position(int x, int y, int count, vec3* camera_pos, vec3 * camera_lookat, int up, int left, int right, int down);
 void reset_flood();
 #endif
