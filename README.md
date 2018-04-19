@@ -48,7 +48,7 @@ We will make a maze game, in first-person perspective. The maze is 2D and based 
 
 - Enemies
 - Obstacles (Jump above a hole or fence), traps
-- Drawing optimized **done with a simple calling where we only draw "half" of the maze, depending on where we look, want to try more advanced optimization**
+- Drawing optimized **done with a simple calling where we only draw "half" of the maze, depending on where we look, want to try more advanced optimization, draw only the current section using flood algorithm**
 - Random generated maze
 
 ### Type of blocks

@@ -23,8 +23,6 @@
 
 #define SIZE 21 // Width and height of maze
 
-
-
 // Models
 Model *skybox;
 Model *model;
@@ -111,7 +109,7 @@ void init(void)
 	LoadTGATextureSimple("../models/wall.tga", &scoreTex);
 	LoadTGATextureSimple("../models/door.tga", &leverTex);
 	LoadTGATextureSimple("../models/TexturesCom_RustedPlates_1024_albedo.tga", &objectiveTex);
-	LoadTGATextureSimple("../models/TexturesCom_OldWoodPlanks_1024_albedo.tga", &flagTex);
+	LoadTGATextureSimple("../models/TexturesCom_GoldLeaf_1024_albedo.tga", &flagTex);
 
 	LoadTGATextureSimple("../models/TexturesCom_StoneWall2_1024_normal.tga", &wallBumpTex);
 	LoadTGATextureSimple("../models/TexturesCom_OldWoodPlanks_1024_normal.tga", &doorBumpTex);
@@ -239,13 +237,13 @@ void display(void)
 	get_bounds_for_optimisation(&camera_pos, &camera_lookat, &x_from, &x_to, &y_from, &y_to);
 	
 	//printf("Number of cells covered : %d x %d\n", y_to - y_from, x_to - x_from);
-
+	
 	// Go through each cell of the maze
 	for (int y = y_from; y < y_to; ++y)
 	{
 		for (int x = x_from; x < x_to; ++x)
 		{	
-			if (has_ground(x, y))
+			if (has_ground(x, y) && is_flood(x, y))
 			{
 				// Upload current cell data to GPU to optimise lightning
 				glUniform1i(glGetUniformLocation(program, "x"), x);

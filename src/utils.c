@@ -32,7 +32,11 @@ extern GLuint program;
 
 double camera_bump_evolution = 0;
 
+// Real maze
 char mazearray[SIZE][SIZE];
+// Maze use for the flood algorithm
+char mazearray_flood[SIZE][SIZE];
+
 
 ///////////////////////////////////////////////////////////////////
 /* Game upate and run functions
@@ -74,6 +78,7 @@ void update(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
         move = VectorAdd(move, MultVec3(Ry(PI/2),VectorSub(*camera_lookat,*camera_pos)));
     if (glutKeyIsDown('d')) // Go right
         move = VectorAdd(move, MultVec3(Ry(PI/2),VectorSub(*camera_pos,*camera_lookat)));
+    
 
     // if we had a move, to prevent segfault when normalizing
     if (move.x != 0 || move.y != 0 || move.z != 0) 
@@ -310,6 +315,13 @@ void enable_lever(vec3* camera_pos)
         PlaySoundInChannel(door_sound, 0);
         change_state_doors();
         set_xy_cell(camera_pos->x, camera_pos->z, 'l');
+
+        // Compute accessible cells
+        reset_flood();
+        flood_from_position((int)floor(camera_pos->x),(int)floor(camera_pos->z));
+
+        // Redraw the lights for the new sections
+        set_lights();
     }
 }
 // Switch the state of doors
@@ -319,10 +331,16 @@ void change_state_doors()
     {
         for (int y = 0; y < SIZE; ++y)
         {
-            if (get_xy_cell(x, y) == 'D') mazearray[x][y] = 'd';
-            else if (get_xy_cell(x, y) == 'd') mazearray[x][y] = 'D';
+            if (get_xy_cell(x, y) == 'D') 
+            {
+                mazearray[x][y] = 'd';
+            }
+            else if (get_xy_cell(x, y) == 'd') 
+            {
+                mazearray[x][y] = 'D';
+            }
         }
-    }
+    }  
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -342,15 +360,40 @@ void get_bounds_for_optimisation(vec3* camera_pos, vec3* camera_lookat, int* x_f
 
      // Left area
     else if (view_angle >= -1 && view_angle < -cos(PI/4)) *x_to = ceil(camera_pos->x)+1;
+        
     
     else if (view_angle >= -cos(PI/4) && view_angle <= cos(PI/4))
     {
         // Up area
-        if (DotProduct(cross, SetVector(0, 1, 0)) > 0)  *y_to = ceil(camera_pos->z)+1;
-        // Dow area
-        else *y_from = floor(camera_pos->z)-1;
+        if (DotProduct(cross, SetVector(0, 1, 0)) > 0) *y_to = ceil(camera_pos->z)+1;
+            
+        // Down area
+        else *y_from = floor(camera_pos->z)-1;    
     }
 }
+
+// Flood functions
+
+void reset_flood()
+{
+    for (int x = 0; x < SIZE; ++x)
+        for (int y = 0; y < SIZE; ++y)
+            mazearray_flood[x][y] = mazearray[x][y];
+}
+void flood_from_position(int x, int y)
+{
+    if (mazearray_flood[x][y] == 'F' || mazearray_flood[x][y] == 'D' || mazearray_flood[x][y] == 'X') return;   
+    mazearray_flood[x][y] = 'F';
+    flood_from_position(x, y-1);
+    flood_from_position(x, y+1);
+    flood_from_position(x+1, y);
+    flood_from_position(x-1, y);
+}
+int is_flood(int x, int y)
+{
+    return (mazearray_flood[x][y] == 'F');
+}
+
 // Change the value of a cell
 void set_xy_cell(double x, double y, char cell){mazearray[(int)floor(x)][(int)floor(y)] = cell;}
 // get the value of a cell
@@ -398,6 +441,8 @@ void set_default_camera(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
             // Find the start cell
             if (get_xy_cell(x, y) == 'B') 
             {
+                reset_flood();
+                flood_from_position(x, y);
                 // Set the position
                 *camera_pos = SetVector(x+0.5, 0.5, y+0.5);
 
@@ -457,6 +502,7 @@ int load_level(int i)
     }	
     fclose(file);
     CURRENT_LEVEL = i;
+    
     return i;
 } 
 
@@ -475,8 +521,8 @@ void get_light_sources(GLfloat* array, int* nb)
         for (int y = 0; y < SIZE; ++y)
         {	
             // Draw lights for all special cells
-            if (get_xy_cell(x, y) == 'B' || (get_xy_cell(x, y) == 'E' && !flag_picked()) || 
-                get_xy_cell(x, y) == 'S' || get_xy_cell(x, y) == 'L')
+            if ((get_xy_cell(x, y) == 'B' || (get_xy_cell(x, y) == 'E' && !flag_picked()) || 
+                get_xy_cell(x, y) == 'S' || get_xy_cell(x, y) == 'L' || get_xy_cell(x, y) == 'l') && is_flood(x, y))
             {
                 array[3*(*nb)] = x + 0.5;
                 array[3*(*nb)+1] = 0.3;
