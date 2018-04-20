@@ -366,9 +366,10 @@ void flood_from_position(int x, int y, int count, vec3* camera_pos, vec3* camera
     if (mazearray_flood[x][y] == 'F' || mazearray_flood[x][y] == 'D' || mazearray_flood[x][y] == 'X') return;   
     mazearray_flood[x][y] = 'F';
 
-
-    vec3 cross = Normalize(CrossProduct(SetVector(1, 0, 0), Normalize(VectorSub(*camera_lookat, *camera_pos))));
-    double view_angle =  DotProduct(Normalize(VectorSub(*camera_lookat, *camera_pos)), SetVector(1, 0, 0));
+    vec3 dir = VectorSub(*camera_lookat, *camera_pos);
+    dir = SetVector(dir.x, 0, dir.z);
+    vec3 cross = Normalize(CrossProduct(SetVector(1, 0, 0), Normalize(dir)));
+    double view_angle =  DotProduct(Normalize(dir), SetVector(1, 0, 0));
 
     int look_up = (view_angle >= -cos(PI/4) && view_angle <= cos(PI/4) && DotProduct(cross, SetVector(0, 1, 0)) > 0);
     int look_down = (view_angle >= -cos(PI/4) && view_angle <= cos(PI/4) && DotProduct(cross, SetVector(0, 1, 0)) < 0);
@@ -376,19 +377,19 @@ void flood_from_position(int x, int y, int count, vec3* camera_pos, vec3* camera
     int look_right = (view_angle >  cos(PI/4) && view_angle <= 1);
 
     // unless Right area, go left with flood
-    if (!look_right && !right) 
+    if ((!look_right && !right) || (look_right && !left && !right))
         flood_from_position(x-1, y, count+1, camera_pos, camera_lookat, up, 1, right, down);
 
      // unless Left area, go right with flood
-    if (!look_left && !left) 
+    if ((!look_left && !left)  || (look_left && !right && !left))
         flood_from_position(x+1, y, count+1, camera_pos, camera_lookat, up, left, 1, down);
         
      // unless up area, go down with flood
-    if (!look_up && !up)
+    if ((!look_up && !up) || (look_up && !down && !up))
         flood_from_position(x, y+1, count+1,camera_pos, camera_lookat, up, left, right, 1);
     
     // unless down area, go up with flood
-    if (!look_down && !down) 
+    if ((!look_down && !down)  || (look_down && !up && !down))
        flood_from_position(x, y-1, count+1, camera_pos, camera_lookat, 1, left, right, down);
 
 }
