@@ -68,7 +68,7 @@ void flood_from_position(int x, int y, int count, vec3* camera_pos, vec3 * camer
 void reset_flood();
 
 void allocate_particles(particle*** array, double x, double y);
-void reset_particle(particle* p, double x, double y);
+void reset_particle(particle* p, double x, double y, int i);
 void simulate_particules(particle** particles, double x, double y);
 void free_particles(particle** particles);
 

@@ -31,6 +31,7 @@ Model *model;
 Model *score;
 Model *lever;
 Model *flag;
+Model *part;
 
 
 // Textures
@@ -42,6 +43,7 @@ GLuint doorTex;
 GLuint leverTex;
 GLuint objectiveTex;
 GLuint flagTex;
+GLuint particleTex;
 
 // Bump map used for normal vectors
 GLuint groundBumpTex;
@@ -92,7 +94,7 @@ void init(void)
 	init_sound();
 	
 	// Try to load the level
-	if (load_level(1) != 1) exit(-1);
+	if (load_level(0) != 0) exit(-1);
 
 	// Default camera position and frostum coordinates
 	mat4 projectionMatrix = perspective(90, 16.0/9.0, 0.01, 500);
@@ -104,6 +106,7 @@ void init(void)
 	score = LoadModelPlus("../models/can.obj");
 	lever = LoadModelPlus("../models/bunnyplus.obj");
 	flag = LoadModelPlus("../models/trophy.obj");
+	part = LoadModelPlus("../models/coin.obj");
 	//flag=lever;
 	// Load textures and bump maps
 	
@@ -115,6 +118,7 @@ void init(void)
 	LoadTGATextureSimple("../models/door.tga", &leverTex);
 	LoadTGATextureSimple("../models/TexturesCom_RustedPlates_1024_albedo.tga", &objectiveTex);
 	LoadTGATextureSimple("../models/TexturesCom_GoldLeaf_1024_albedo.tga", &flagTex);
+	LoadTGATextureSimple("../models/TexturesCom_GoldLeaf_1024_albedo.tga", &particleTex);
 
 	LoadTGATextureSimple("../models/TexturesCom_StoneWall2_1024_normal.tga", &wallBumpTex);
 	LoadTGATextureSimple("../models/TexturesCom_OldWoodPlanks_1024_normal.tga", &doorBumpTex);
@@ -141,6 +145,9 @@ void init(void)
 	glBindTexture(GL_TEXTURE_2D, objectiveTex);
 	glActiveTexture(GL_TEXTURE7);
 	glBindTexture(GL_TEXTURE_2D, flagTex);
+	glActiveTexture(GL_TEXTURE8);
+	glBindTexture(GL_TEXTURE_2D, particleTex);
+
 
 	// Bind bump maps to GL_TEXTURE
 	glActiveTexture(GL_TEXTURE10);
@@ -307,10 +314,12 @@ void display(void)
 				if (get_xy_cell(x, y) == 'L') draw_up_lever(x, y, lever, program);
 				if (get_xy_cell(x, y) == 'l') draw_down_lever(x, y, lever, program);
 
+				// Draw gold fountain
 				if (get_xy_cell(x, y) == 'B' && flag_picked())
 				{
+					glUniform1i(glGetUniformLocation(program, "texUnit"), 8);
 					simulate_particules(particles, part_x + 0.5, part_y + 0.5);
-					draw_particles(particles, flag, program);
+					draw_particles(particles, part, program);
 				}
 			}
 		}

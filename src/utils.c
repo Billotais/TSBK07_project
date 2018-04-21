@@ -3,7 +3,7 @@
 
 #define PI 3.141592
 #define SIZE 21
-#define N_PARTICLES 2000
+#define N_PARTICLES 1000
 // X are solid walls
 // x are not solid walls
 // 0 are empty cells
@@ -663,8 +663,8 @@ void draw_particles(particle** particles, Model *model, GLuint program)
     {
         if (particles[i]->y < 0) continue;
         mat4 model_pos = T(particles[i]->x, particles[i]->y, particles[i]->z);
-        mat4 model_rot = Ry(particles[i]->angle);
-        mat4 model_scale = S(0.005, 0.005, 0.005);
+        mat4 model_rot = Mult(Rx(particles[i]->angle), Rz(2*particles[i]->angle));
+        mat4 model_scale = S(0.0001, 0.0001, 0.0001);
         mat4 model_transform = Mult(model_pos, Mult(model_rot, model_scale));
         glUniformMatrix4fv(glGetUniformLocation(program, "transformMatrix"), 1, GL_TRUE, model_transform.m);
         DrawModel(model, program, "in_vertex",  "in_normal", "in_texture");
@@ -720,42 +720,52 @@ void allocate_particles(particle*** array, double x, double y)
     for (int i = 0; i < N_PARTICLES ; ++i)
     {
         particle* p = malloc(sizeof(particle));
-        reset_particle(p, x, y);
+        reset_particle(p, x, y, i);
         (*array)[i] = p;    
     }
 }
-void reset_particle(particle* p, double x, double y)
+void reset_particle(particle* p, double x, double y, int i)
 {
     // Put the particle position at the given coordinate, with default values
-    
-    p->x = x;
+   
+    p->x = x + 0.02 - (double)(rand() % 1000) / 25000.0;
     p->y = -((double)(rand() % 1000) / 200.0);
-    p->z = y;
+    p->z = y + 0.02 - (double)(rand() % 1000) / 25000.0;
     p->angle = rand() % 360;
     p->vx = 0.0025 - (double)(rand() % 1000) / 200000.0; 
-    p->vy = 0.01 + (double)(rand() % 1000) / 200000.0; 
+    p->vy = 0.012 + (double)(rand() % 1000) / 200000.0; 
     p->vz = 0.0025 - (double)(rand() % 1000) / 200000.0; 
-    
-    
+
 }
 void simulate_particules(particle** particles, double x, double y)
 {
     for (int i = 0; i < N_PARTICLES; ++i)
     {
         particle* p = particles[i];
-        // If it is above the ground, move it, accelerate it, ...
-        if (p->y > 0)
+       
+        if (p->y >= 0)
         {
             p->vy-=0.0002; 
-            p->x += p->vx + 0.005 - (double)(rand() % 1000) / 100000.0;
-            p->z += p->vz + 0.005 - (double)(rand() % 1000) / 100000.0;
+            p->x += p->vx + 0.00125 - (double)(rand() % 1000) / 400000.0;
+            p->z += p->vz + 0.00125 - (double)(rand() % 1000) / 400000.0;
         } 
         
         // Even if under make it go up
         p->y += p->vy;
         
         // If back to the ground, reset
-        if (p->y < 0 && p->vy < 0) reset_particle(p, x, y);
+        if (p->y < 0 && p->vy < 0) 
+        {
+            reset_particle(p, x, y, i);
+        }
+
+        // If close to the ground, stop them to give the effect that they stay a little bit
+        if (p->y < 0.03 && p->vy < 0) 
+        {
+            p->vy = -0.001;
+            p->vx*=0.99;
+            p->vz*=0.99;
+        }
     }
 }
 void free_particles(particle** particles)

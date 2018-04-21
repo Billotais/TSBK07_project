@@ -36,7 +36,7 @@ We will make a maze game, in first-person perspective. The maze is 2D and based 
 - Maze descibed by a text file, stored as a 2D array. **done**
 - Multi level management **done, with automatic level switching, correct positioning and direction of player on spawn**
 - We can pick the flag and take it with us,has an animation and collision with walls **done**
-- Special graphics for the goal
+- Special graphics for the goal**Gold coin fountain on the start cell when holding the cup, with the coins staying on the floor a bit**
 - UI **done, score, level, objective and interactive button indications shown**.
 
 ### Will most likely do
