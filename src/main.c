@@ -74,6 +74,9 @@ mat4 south_wall_pos;
 mat4 west_wall_pos;
 mat4 ground_pos;
 
+particle** particles;
+int part_x, part_y;
+
 void reshape(GLsizei w, GLsizei h)
 {
 	// Viewport is a separate setting
@@ -89,7 +92,7 @@ void init(void)
 	init_sound();
 	
 	// Try to load the level
-	if (load_level(0) != 0) exit(-1);
+	if (load_level(1) != 1) exit(-1);
 
 	// Default camera position and frostum coordinates
 	mat4 projectionMatrix = perspective(90, 16.0/9.0, 0.01, 500);
@@ -181,6 +184,10 @@ void init(void)
 	ground_pos = Mult(T(0, 0, 1), Rx(-PI/2));
 
 	printError("init arrays");
+	
+	
+	get_start_cell_position(&part_x, &part_y);
+	allocate_particles(&particles, part_x + 0.5, part_y + 0.5);
 
 }
 void OnTimer(int value)
@@ -300,9 +307,15 @@ void display(void)
 				if (get_xy_cell(x, y) == 'L') draw_up_lever(x, y, lever, program);
 				if (get_xy_cell(x, y) == 'l') draw_down_lever(x, y, lever, program);
 
+				if (get_xy_cell(x, y) == 'B' && flag_picked())
+				{
+					simulate_particules(particles, part_x + 0.5, part_y + 0.5);
+					draw_particles(particles, flag, program);
+				}
 			}
 		}
 	}
+	simulate_particules(particles, part_x + 0.5, part_y + 0.5);
 
 	// for demonstration purposes
 
@@ -316,8 +329,13 @@ void display(void)
 	char stats_avg[50];
 	sprintf(stats_avg, "Average : %.2f%%", total_cell/total_count);
 	sfDrawString(650, 40, stats_avg);
+	//printf("Salut");
+    
+	
 
 	
+
+
 
 	draw_text(&camera_pos);
 	

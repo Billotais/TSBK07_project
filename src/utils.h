@@ -10,11 +10,19 @@
 #include "CallMeAL.h"
 #include "simplefont.h"
 
+
+typedef struct {
+    double x, y, z;
+    double angle;
+    double vx, vy, vz;
+} particle;
+
 void draw_flag(double x, double z, double y, Model *model, GLuint program, vec3* camera_pos, vec3* camera_lookat);
 void draw_square(int x, int y, mat4 base,Model *model, GLuint program);
 void draw_score(int x, int y, Model *model, GLuint program);
 void draw_up_lever(int x, int y, Model *model, GLuint program);
 void draw_down_lever(int x, int y, Model *model, GLuint program);
+void draw_particles(particle** particles, Model *model, GLuint program);
 void set_default_camera(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot);
 void update(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot);
 void pickup_score(vec3* camera_pos);
@@ -58,4 +66,11 @@ void init_sound();
 int is_flood(int x, int y);
 void flood_from_position(int x, int y, int count, vec3* camera_pos, vec3 * camera_lookat, int up, int left, int right, int down);
 void reset_flood();
+
+void allocate_particles(particle*** array, double x, double y);
+void reset_particle(particle* p, double x, double y);
+void simulate_particules(particle** particles, double x, double y);
+void free_particles(particle** particles);
+
+void get_start_cell_position(int* x, int* y);
 #endif

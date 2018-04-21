@@ -3,6 +3,7 @@
 
 #define PI 3.141592
 #define SIZE 21
+#define N_PARTICLES 2000
 // X are solid walls
 // x are not solid walls
 // 0 are empty cells
@@ -31,6 +32,9 @@ int CURRENT_LEVEL = 0;
 
 // Same program as in main.c, used to uplaod the lights to the GPU
 extern GLuint program;
+
+extern particle** particles;
+extern int part_x, part_y;
 
 double camera_bump_evolution = 0;
 
@@ -653,15 +657,36 @@ void draw_flag(double x, double z, double y, Model *model, GLuint program, vec3*
     
 }
 
+void draw_particles(particle** particles, Model *model, GLuint program)
+{
+    for (int i = 0; i < N_PARTICLES ; ++i)  
+    {
+        if (particles[i]->y < 0) continue;
+        mat4 model_pos = T(particles[i]->x, particles[i]->y, particles[i]->z);
+        mat4 model_rot = Ry(particles[i]->angle);
+        mat4 model_scale = S(0.005, 0.005, 0.005);
+        mat4 model_transform = Mult(model_pos, Mult(model_rot, model_scale));
+        glUniformMatrix4fv(glGetUniformLocation(program, "transformMatrix"), 1, GL_TRUE, model_transform.m);
+        DrawModel(model, program, "in_vertex",  "in_normal", "in_texture");
+        
+    }
+
+}
+
 //////////////////////////////////////////////////////////////
 
-// End the vel, go to the next one
+// End the level, go to the next one
 void end_level(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
 {	
     // Try to go to the next level
+
+
+    free_particles(particles);
     int try = load_level(++CURRENT_LEVEL);
     if (try >= 0) // If there is a next level
     {
+        get_start_cell_position(&part_x, &part_y);
+	    allocate_particles(&particles, part_x + 0.5, part_y + 0.5);
         // reset some values
         SCORE = 0;
         FLAG_PICKED = 0;
@@ -677,4 +702,75 @@ void end_level(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
         // Exit
         exit(0);
     }
+}
+
+
+////////////////////////////////////////////////////////////////////////////
+/* Particle functions
+ * To make the particle simulations
+ */
+////////////////////////////////////////////////////////////////////////////
+
+void allocate_particles(particle*** array, double x, double y)
+{
+    // init array
+    *array = malloc(N_PARTICLES * sizeof(particle*));
+
+    // Alloc each particle
+    for (int i = 0; i < N_PARTICLES ; ++i)
+    {
+        particle* p = malloc(sizeof(particle));
+        reset_particle(p, x, y);
+        (*array)[i] = p;    
+    }
+}
+void reset_particle(particle* p, double x, double y)
+{
+    // Put the particle position at the given coordinate, with default values
+    
+    p->x = x;
+    p->y = -((double)(rand() % 1000) / 200.0);
+    p->z = y;
+    p->angle = rand() % 360;
+    p->vx = 0.0025 - (double)(rand() % 1000) / 200000.0; 
+    p->vy = 0.01 + (double)(rand() % 1000) / 200000.0; 
+    p->vz = 0.0025 - (double)(rand() % 1000) / 200000.0; 
+    
+    
+}
+void simulate_particules(particle** particles, double x, double y)
+{
+    for (int i = 0; i < N_PARTICLES; ++i)
+    {
+        particle* p = particles[i];
+        // If it is above the ground, move it, accelerate it, ...
+        if (p->y > 0)
+        {
+            p->vy-=0.0002; 
+            p->x += p->vx + 0.005 - (double)(rand() % 1000) / 100000.0;
+            p->z += p->vz + 0.005 - (double)(rand() % 1000) / 100000.0;
+        } 
+        
+        // Even if under make it go up
+        p->y += p->vy;
+        
+        // If back to the ground, reset
+        if (p->y < 0 && p->vy < 0) reset_particle(p, x, y);
+    }
+}
+void free_particles(particle** particles)
+{
+    // free particle
+    for (int i = 0; i < N_PARTICLES; ++i)
+    {
+        free(particles[i]);
+    }
+    // free array
+    free(particles);
+}
+void get_start_cell_position(int* x, int* y)
+{
+    for (int i = 0; i < SIZE; ++i)
+        for (int j = 0; j < SIZE; ++j)
+            if (get_xy_cell(i, j) == 'B') {*x = i; *y = j;}     
 }
