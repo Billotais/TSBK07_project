@@ -75,12 +75,11 @@ void free_particles(particle** particles);
 void get_start_cell_position(int* x, int* y);
 
 int create_maze();
-void print_maze();
 void carve_maze(int x, int y);
 void generate_empty();
 void solve_maze();
 void reset_generate_end();
 void generate_end(int x, int y, int count);
-void generate_doors(int n);
+void generate_door();
 void replace_other_by_empty();
 #endif

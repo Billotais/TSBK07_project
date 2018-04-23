@@ -812,12 +812,14 @@ void get_start_cell_position(int* x, int* y)
 ////////////////////////////////////////////////////////////////////////////
 /* Maze generator functions
  * To create a new random maze when no other are available
+ * Inspured by https://github.com/joewing/maze
  */
 ////////////////////////////////////////////////////////////////////////////
 
 int max_dist = 0;
 int max_x = 0;
 int max_y = 0;
+
 #define EMPTY '0'
 #define WALL 'X'
 #define SOLVE '-'
@@ -825,28 +827,22 @@ int max_y = 0;
 #define END 'E' 
 #define FLOOD 'F'
 #define OTHER 'K'
-#define OPEN 'D'
-#define CLOSE 'd'
+#define DOOR 'D'
+
 
 int create_maze() {
 
-    char maze[SIZE][SIZE];
-    char maze_flood[SIZE][SIZE];
     
-
     /* Generate and display the maze. */
     generate_empty();
 
+    // Find end cell coordinatesm store it in max_x, max_y
     reset_generate_end();
     generate_end(1,1,0);
 
-    maze[1][1] = START;
-    maze[max_x][max_y] = END;
-    //print_maze(maze, width, height);
 
     solve_maze();
-    //print_maze(maze, width, height);
-    generate_doors(3);
+    generate_door();
     
     replace_other_by_empty();
 
@@ -854,61 +850,42 @@ int create_maze() {
     return 0;
 }
 
-/* Display the maze. */
 
-
-void print_maze() {
-   int x, y;
-   for(y = 0; y < SIZE; y++) {
-      for(x = 0; x < SIZE; x++) {
-         switch(mazearray[x][y]) {
-         case WALL:   printf("X");  break;
-         case SOLVE:  printf("-");  break;
-         case EMPTY:  printf(" ");  break;
-         case START:  printf("B");  break;
-         case END:    printf("E");  break;
-         case OPEN:   printf("D");  break;
-         case CLOSE:  printf("d");  break;
-         default:     printf("K");  break;
-         }
-      }
-      printf("\n");
-   }
-}
 
 /*  Carve the maze starting at x, y. */
 void carve_maze(int x, int y) {
 
-   int x1, y1;
-   int x2, y2;
-   int dx, dy;
-   int dir, count;
-
-   dir = rand() % 4;
-   count = 0;
-   while(count < 4) {
-      dx = 0; dy = 0;
-      switch(dir) {
-      case 0:  dx = 1;  break;
-      case 1:  dy = 1;  break;
-      case 2:  dx = -1; break;
-      default: dy = -1; break;
-      }
-      x1 = x + dx;
-      y1 = y + dy;
-      x2 = x1 + dx;
-      y2 = y1 + dy;
-      if(   x2 > 0 && x2 < SIZE && y2 > 0 && y2 < SIZE
-         && mazearray[x1][y1] == WALL && mazearray[x2][y2] == WALL) {
-         mazearray[x1][y1] = EMPTY;
-         mazearray[x2][y2] = EMPTY;
-         x = x2; y = y2;
-         dir = rand() % 4;
-         count = 0;
-      } else {
-         dir = (dir + 1) % 4;
-         count += 1;
-      }
+    int dir = rand() % 4;
+    int count = 0;
+    while(count < 4) 
+    {
+        int dx = 0; int dy = 0;
+        switch(dir) 
+        {
+            case 0:  dx = 1;  break;
+            case 1:  dy = 1;  break;
+            case 2:  dx = -1; break;
+            default: dy = -1; break;
+        }
+        // x1 and y1 : one cell further, x1 and y2 : two cells further
+        int x1 = x + dx;
+        int y1 = y + dy;
+        int x2 = x1 + dx;
+        int y2 = y1 + dy;
+        if(x2 > 0 && x2 < SIZE && y2 > 0 && y2 < SIZE
+            && mazearray[x1][y1] == WALL && mazearray[x2][y2] == WALL) // If we can dig by two cells, do it
+        {
+            mazearray[x1][y1] = EMPTY;
+            mazearray[x2][y2] = EMPTY;
+            x = x2; y = y2;
+            dir = rand() % 4;
+            count = 0;
+        } 
+        else // Try other direction
+        {
+            dir = (dir + 1) % 4;
+            count += 1;
+        }
    }
 
 }
@@ -916,86 +893,79 @@ void carve_maze(int x, int y) {
 /* Generate maze in matrix maze with size width, height. */
 void generate_empty() {
 
-   int x, y;
+    /* Initialize the maze. */
+    for(int y = 0; y < SIZE; y++) 
+        for(int x = 0; x < SIZE; x++) 
+            mazearray[x][y] = WALL;
 
-   /* Initialize the maze. */
-   for(y = 0; y < SIZE; y++) 
-      for(x = 0; x < SIZE; x++) 
-          mazearray[x][y] = WALL;
+    // Put start cell
+    mazearray[1][1] = EMPTY;
 
-   mazearray[1][1] = EMPTY;
+    /* Seed the random number generator. */
+    srand(time(0));
 
-   /* Seed the random number generator. */
-   srand(time(0));
-
-   /* Carve the maze. */
-   for(y = 1; y < SIZE; y += 2) {
-      for(x = 1; x < SIZE; x += 2) {
-         carve_maze(x, y);
-      }
-   }
-
-   /* Set up the entry and exit. */
-
+    /* Carve the maze. */
+    for(int y = 1; y < SIZE; y += 2) 
+        for(int x = 1; x < SIZE; x += 2) 
+            carve_maze(x, y);
 }
 
 
 /* Solve the maze. */
 void solve_maze() {
 
-   int dir, count;
-   int x, y;
-   int dx, dy;
-   int forward;
+    /* Remove the entry and exit. */
+    mazearray[1][1] = EMPTY;
+    mazearray[max_x][max_y] = EMPTY;
 
-   /* Remove the entry and exit. */
-   mazearray[1][1] = EMPTY;
-   mazearray[max_x][max_y] = EMPTY;
-
-   forward = 1;
-   dir = 0;
-   count = 0;
-   x = 1;
-   y = 1;
-   while(x != max_x || y != max_y) {
-      dx = 0; dy = 0;
-      switch(dir) {
-      case 0:  dx = 1;  break;
-      case 1:  dy = 1;  break;
-      case 2:  dx = -1; break;
-      default: dy = -1; break;
-      }
-      if(   (forward  && mazearray[x + dx][y + dy] == EMPTY)
-         || (!forward && mazearray[x + dx][y + dy] == SOLVE)) {
-         mazearray[x][y] = forward ? SOLVE : OTHER;
-         x += dx;
-         y += dy;
-         forward = 1;
-         count = 0;
-         dir = 0;
-      } else {
-         dir = (dir + 1) % 4;
-         count += 1;
-         if(count > 3) {
-            forward = 0;
+    int forward = 1, dir = 0,count = 0;
+    int x = 1, y = 1; // Starting cell
+    while(x != max_x || y != max_y) { // While not at the end
+        int dx = 0, dy = 0;
+        switch(dir) 
+        {
+            case 0:  dx = 1;  break;
+            case 1:  dy = 1;  break;
+            case 2:  dx = -1; break;
+            default: dy = -1; break;
+        }
+        if((forward && mazearray[x + dx][y + dy] == EMPTY) || 
+          (!forward && mazearray[x + dx][y + dy] == SOLVE))
+        {
+            mazearray[x][y] = forward ? SOLVE : OTHER;
+            x += dx;
+            y += dy;
+            forward = 1;
             count = 0;
-         }
-      }
-   }
+            dir = 0;
+        } 
+        else 
+        {
+            dir = (dir + 1) % 4;
+            count += 1;
+            if(count > 3) 
+            {
+                forward = 0;
+                count = 0;
+            }
+        }
+    }
 
-   /* Replace the entry and exit. */
-   mazearray[1][1] = START;
-   mazearray[max_x][max_y] = END;
+    /* Replace the entry and exit. */
+    mazearray[1][1] = START;
+    mazearray[max_x][max_y] = END;
    
 }
 
+// Reset mazearray_flood to allow the flood algorithm to work
 void reset_generate_end()
 {
     for (int x = 0; x < SIZE; ++x)
         for (int y = 0; y < SIZE; ++y)
             mazearray_flood[x][y] = mazearray[x][y];
 }
-void generate_end(int x, int y, int count)
+// Reccursilvy flood the maze until finding the furthest cell from the start
+void generate_end(int x, int y, int count) 
 {
     if (mazearray_flood[x][y] == EMPTY)
     {
@@ -1013,37 +983,31 @@ void generate_end(int x, int y, int count)
     }
 }
 
-void generate_doors(int n)
+void generate_door()
 {
-    int o_c = 0;
-    int steps = (int)((double)max_dist / ((double)n));
     int curr_step = 0;
     int curr = START;
-    int x = 1;
-    int y = 1;
+    int x = 1, y = 1; // Start position
     
 
-    while (curr != END)
+    while (curr != END) // While not at end cell
     {
-        if (curr != START) mazearray[x][y] = EMPTY;
-        if (curr_step == steps) 
-        {
-            mazearray[x][y] = (o_c ? CLOSE : OPEN);
-            o_c = !o_c;
-            curr_step = 0;
+        if (curr != START) mazearray[x][y] = EMPTY; // Remoe the solve cells used to find path to end
+        if (curr_step == max_dist / 2) mazearray[x][y] = DOOR; // Draw door
+            
         }
-        
+        // Move further allong the way to the end
         if (mazearray[x][y+1] == SOLVE || mazearray[x][y+1] == END) y++;
         else if (mazearray[x][y-1] == SOLVE || mazearray[x][y-1] == END) y--;
         else if (mazearray[x+1][y] == SOLVE || mazearray[x+1][y] == END) x++;
         else if (mazearray[x-1][y] == SOLVE || mazearray[x-1][y] == END) x--;
         
-
         curr = mazearray[x][y];
         curr_step++;
     }
 
 }
+// Replace OTHER cells used during solve by empty cells
 void replace_other_by_empty()
 {
     for (int x = 0; x < SIZE; ++x)
