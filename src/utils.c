@@ -504,7 +504,12 @@ int load_level(int i)
     char file_name[18];
     sprintf(file_name, "../levels/level_%d", i);
     FILE* file = fopen(file_name, "r");
-    if (file == NULL) return -1;
+    if (file == NULL) 
+    {
+        create_maze();
+        CURRENT_LEVEL = i;
+        return i;
+    }
 
     int curr_row = 0;
     int curr_col = 0;
@@ -701,6 +706,7 @@ void end_level(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
     int try = load_level(++CURRENT_LEVEL);
     if (try >= 0) // If there is a next level
     {
+       
         get_start_cell_position(&part_x, &part_y);
 	    allocate_particles(&particles, part_x + 0.5, part_y + 0.5);
         // reset some values
@@ -709,6 +715,7 @@ void end_level(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
         // reset the camera and light positions
         set_default_camera(camera_pos, camera_lookat, camera_rot);
         set_lights();
+        printf("Level loaded\n");
     }
     else 
     {	// Clear sound API
@@ -799,4 +806,247 @@ void get_start_cell_position(int* x, int* y)
     for (int i = 0; i < SIZE; ++i)
         for (int j = 0; j < SIZE; ++j)
             if (get_xy_cell(i, j) == 'B') {*x = i; *y = j;}     
+}
+
+
+////////////////////////////////////////////////////////////////////////////
+/* Maze generator functions
+ * To create a new random maze when no other are available
+ */
+////////////////////////////////////////////////////////////////////////////
+
+int max_dist = 0;
+int max_x = 0;
+int max_y = 0;
+#define EMPTY '0'
+#define WALL 'X'
+#define SOLVE '-'
+#define START 'B'
+#define END 'E' 
+#define FLOOD 'F'
+#define OTHER 'K'
+#define OPEN 'D'
+#define CLOSE 'd'
+
+int create_maze() {
+
+    char maze[SIZE][SIZE];
+    char maze_flood[SIZE][SIZE];
+    
+
+    /* Generate and display the maze. */
+    generate_empty();
+
+    reset_generate_end();
+    generate_end(1,1,0);
+
+    maze[1][1] = START;
+    maze[max_x][max_y] = END;
+    //print_maze(maze, width, height);
+
+    solve_maze();
+    //print_maze(maze, width, height);
+    generate_doors(3);
+    
+    replace_other_by_empty();
+
+    printf("salut");
+    return 0;
+}
+
+/* Display the maze. */
+
+
+void print_maze() {
+   int x, y;
+   for(y = 0; y < SIZE; y++) {
+      for(x = 0; x < SIZE; x++) {
+         switch(mazearray[x][y]) {
+         case WALL:   printf("X");  break;
+         case SOLVE:  printf("-");  break;
+         case EMPTY:  printf(" ");  break;
+         case START:  printf("B");  break;
+         case END:    printf("E");  break;
+         case OPEN:   printf("D");  break;
+         case CLOSE:  printf("d");  break;
+         default:     printf("K");  break;
+         }
+      }
+      printf("\n");
+   }
+}
+
+/*  Carve the maze starting at x, y. */
+void carve_maze(int x, int y) {
+
+   int x1, y1;
+   int x2, y2;
+   int dx, dy;
+   int dir, count;
+
+   dir = rand() % 4;
+   count = 0;
+   while(count < 4) {
+      dx = 0; dy = 0;
+      switch(dir) {
+      case 0:  dx = 1;  break;
+      case 1:  dy = 1;  break;
+      case 2:  dx = -1; break;
+      default: dy = -1; break;
+      }
+      x1 = x + dx;
+      y1 = y + dy;
+      x2 = x1 + dx;
+      y2 = y1 + dy;
+      if(   x2 > 0 && x2 < SIZE && y2 > 0 && y2 < SIZE
+         && mazearray[x1][y1] == WALL && mazearray[x2][y2] == WALL) {
+         mazearray[x1][y1] = EMPTY;
+         mazearray[x2][y2] = EMPTY;
+         x = x2; y = y2;
+         dir = rand() % 4;
+         count = 0;
+      } else {
+         dir = (dir + 1) % 4;
+         count += 1;
+      }
+   }
+
+}
+
+/* Generate maze in matrix maze with size width, height. */
+void generate_empty() {
+
+   int x, y;
+
+   /* Initialize the maze. */
+   for(y = 0; y < SIZE; y++) 
+      for(x = 0; x < SIZE; x++) 
+          mazearray[x][y] = WALL;
+
+   mazearray[1][1] = EMPTY;
+
+   /* Seed the random number generator. */
+   srand(time(0));
+
+   /* Carve the maze. */
+   for(y = 1; y < SIZE; y += 2) {
+      for(x = 1; x < SIZE; x += 2) {
+         carve_maze(x, y);
+      }
+   }
+
+   /* Set up the entry and exit. */
+
+}
+
+
+/* Solve the maze. */
+void solve_maze() {
+
+   int dir, count;
+   int x, y;
+   int dx, dy;
+   int forward;
+
+   /* Remove the entry and exit. */
+   mazearray[1][1] = EMPTY;
+   mazearray[max_x][max_y] = EMPTY;
+
+   forward = 1;
+   dir = 0;
+   count = 0;
+   x = 1;
+   y = 1;
+   while(x != max_x || y != max_y) {
+      dx = 0; dy = 0;
+      switch(dir) {
+      case 0:  dx = 1;  break;
+      case 1:  dy = 1;  break;
+      case 2:  dx = -1; break;
+      default: dy = -1; break;
+      }
+      if(   (forward  && mazearray[x + dx][y + dy] == EMPTY)
+         || (!forward && mazearray[x + dx][y + dy] == SOLVE)) {
+         mazearray[x][y] = forward ? SOLVE : OTHER;
+         x += dx;
+         y += dy;
+         forward = 1;
+         count = 0;
+         dir = 0;
+      } else {
+         dir = (dir + 1) % 4;
+         count += 1;
+         if(count > 3) {
+            forward = 0;
+            count = 0;
+         }
+      }
+   }
+
+   /* Replace the entry and exit. */
+   mazearray[1][1] = START;
+   mazearray[max_x][max_y] = END;
+   
+}
+
+void reset_generate_end()
+{
+    for (int x = 0; x < SIZE; ++x)
+        for (int y = 0; y < SIZE; ++y)
+            mazearray_flood[x][y] = mazearray[x][y];
+}
+void generate_end(int x, int y, int count)
+{
+    if (mazearray_flood[x][y] == EMPTY)
+    {
+        mazearray_flood[x][y] = FLOOD;
+        if (count > max_dist)
+        {
+            max_dist = count;
+            max_x = x;
+            max_y = y;
+        }
+        generate_end(x+1, y, count+1);
+        generate_end(x-1, y, count+1);
+        generate_end(x, y+1, count+1);
+        generate_end(x, y-1, count+1);
+    }
+}
+
+void generate_doors(int n)
+{
+    int o_c = 0;
+    int steps = (int)((double)max_dist / ((double)n));
+    int curr_step = 0;
+    int curr = START;
+    int x = 1;
+    int y = 1;
+    
+
+    while (curr != END)
+    {
+        if (curr != START) mazearray[x][y] = EMPTY;
+        if (curr_step == steps) 
+        {
+            mazearray[x][y] = (o_c ? CLOSE : OPEN);
+            o_c = !o_c;
+            curr_step = 0;
+        }
+        
+        if (mazearray[x][y+1] == SOLVE || mazearray[x][y+1] == END) y++;
+        else if (mazearray[x][y-1] == SOLVE || mazearray[x][y-1] == END) y--;
+        else if (mazearray[x+1][y] == SOLVE || mazearray[x+1][y] == END) x++;
+        else if (mazearray[x-1][y] == SOLVE || mazearray[x-1][y] == END) x--;
+        
+
+        curr = mazearray[x][y];
+        curr_step++;
+    }
+
+}
+void replace_other_by_empty()
+{
+    for (int x = 0; x < SIZE; ++x)
+        for (int y = 0; y < SIZE; ++y)
+            if (mazearray[x][y] == OTHER) mazearray[x][y] = EMPTY;
 }
