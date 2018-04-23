@@ -25,6 +25,10 @@
 
 ALuint score_sound;
 ALuint door_sound;
+ALuint ambiance_sound;
+ALuint victory_sound;
+ALuint cup_picked_sound;
+
 
 int SCORE = 0;
 int FLAG_PICKED = 0;
@@ -160,6 +164,7 @@ void update(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
         check_position(camera_pos, camera_lookat);
         check_corner(camera_pos,camera_lookat);
     }
+    if (!ChannelIsPlaying(1)) PlaySoundInChannel(ambiance_sound, 1);
     
 }
 // Check that the current position is valid, along the walls
@@ -303,6 +308,7 @@ void check_flag(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
         {
             FLAG_PICKED = 1;
             set_lights();
+            PlaySoundInChannel(cup_picked_sound, 0);
         }   
         
     }
@@ -484,7 +490,12 @@ void init_sound()
     }
     // Load all sounds
     score_sound = LoadSound("../sounds/score.wav");
-    door_sound = LoadSound("../sounds/open_door.wav"); 
+    door_sound = LoadSound("../sounds/door.wav"); 
+    ambiance_sound = LoadSound("../sounds/creepy_ambiance.wav");
+    victory_sound = LoadSound("../sounds/victory.wav");
+    cup_picked_sound = LoadSound("../sounds/cup_picked.wav");
+    
+
 }
 // Load a given level into memory
 int load_level(int i)
@@ -685,7 +696,7 @@ void end_level(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
 {	
     // Try to go to the next level
 
-
+    PlaySoundInChannel(victory_sound, 0);
     free_particles(particles);
     int try = load_level(++CURRENT_LEVEL);
     if (try >= 0) // If there is a next level
