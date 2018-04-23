@@ -298,8 +298,13 @@ void check_flag(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
     // if not picked, pick it, it picked and on start cell, end level
     if (get_xy_cell(camera_pos->x, camera_pos->z) == 'E' && !FLAG_PICKED)
     {
-        FLAG_PICKED = 1;
-        set_lights();
+        if ((abs(camera_pos->x - (floor(camera_pos->x) + 0.5)) < 0.1) && 
+            (abs(camera_pos->z - (floor(camera_pos->z) + 0.5)) < 0.1))
+        {
+            FLAG_PICKED = 1;
+            set_lights();
+        }   
+        
     }
     else if (get_xy_cell(camera_pos->x, camera_pos->z) == 'B' && FLAG_PICKED)
         end_level(camera_pos, camera_lookat, camera_rot);
@@ -309,8 +314,8 @@ void pickup_score(vec3* camera_pos)
 {
     if (get_xy_cell(camera_pos->x, camera_pos->z) == 'S')
     {
-        if ((camera_pos->x - (floor(camera_pos->x) + 0.5) < 0.1) && 
-            (camera_pos->z - (floor(camera_pos->z) + 0.5) < 0.1))
+        if ((abs(camera_pos->x - (floor(camera_pos->x) + 0.5)) < 0.1) && 
+            (abs(camera_pos->z - (floor(camera_pos->z) + 0.5)) < 0.1))
         {
             PlaySoundInChannel(score_sound, 0);
             set_xy_cell(camera_pos->x, camera_pos->z, '0');
@@ -587,7 +592,7 @@ void draw_square(int x, int y, mat4 base, Model *model, GLuint program)
 void draw_score(int x, int y, Model *model, GLuint program)
 {
     mat4 model_pos = T(x+0.5, 0, y+0.5);
-    mat4 model_scale = S(0.001, 0.001, 0.001);
+    mat4 model_scale = S(0.2, 0.2, 0.2);
     mat4 model_transform = Mult(model_pos, model_scale);
     glUniformMatrix4fv(glGetUniformLocation(program, "transformMatrix"), 1, GL_TRUE, model_transform.m);
     DrawModel(model, program, "in_vertex",  "in_normal", "in_texture");
