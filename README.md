@@ -51,17 +51,6 @@ We will make a maze game, in first-person perspective. The maze is 2D and based 
 - Drawing optimized **done with a simple calling where we only draw "half" of the maze, depending on where we look, want to try more advanced optimization, draw only the current section using flood algorithm**
 - Random generated maze **work in progress, maze, start, end and door are generated, need lever and scores**
 
-### Type of blocks
-
-X: Wall
-0: Floor
-B: Beggining
-E: End
-S: Score object
-I: Interruptor not pressed
-i: interruptor pressed
-D: Door close
-d: Door open
 
 ### Textures
 

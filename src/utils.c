@@ -60,8 +60,8 @@ void update(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
     if (glutKeyIsDown('c')) horizontal_speed = 2*HOR_SPEED;
     
     // Check if we are on a lever before moving
-    int was_on_lever = (get_xy_cell(camera_pos->x, camera_pos->z) == 'L' ||
-                        get_xy_cell(camera_pos->x, camera_pos->z) == 'l');
+    int was_on_lever = (get_xy_cell(camera_pos->x, camera_pos->z) == LEVER ||
+                        get_xy_cell(camera_pos->x, camera_pos->z) == LEVER_PRESSED);
 
     int old_x = camera_pos->x;
     int old_y = camera_pos->z;
@@ -141,9 +141,9 @@ void update(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
     check_flag(camera_pos, camera_lookat, camera_rot);
 
     // If we left a lever cell, we reset the lever to be enable again
-    if (was_on_lever && get_xy_cell(camera_pos->x, camera_pos->z) != 'l')
+    if (was_on_lever && get_xy_cell(camera_pos->x, camera_pos->z) != LEVER_PRESSED)
     {
-        set_xy_cell(old_x, old_y, 'L');
+        set_xy_cell(old_x, old_y, LEVER);
     }
     
     // Check collisions if enabled, can disbale them for debuggin purposes
@@ -289,7 +289,7 @@ void check_corner(vec3 *camera_pos, vec3 *camera_lookat)
 void check_flag(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
 {
     // if not picked, pick it, it picked and on start cell, end level
-    if (get_xy_cell(camera_pos->x, camera_pos->z) == 'E' && !FLAG_PICKED)
+    if (get_xy_cell(camera_pos->x, camera_pos->z) == END && !FLAG_PICKED)
     {
         if ((abs(camera_pos->x - (floor(camera_pos->x) + 0.5)) < 0.1) && 
             (abs(camera_pos->z - (floor(camera_pos->z) + 0.5)) < 0.1))
@@ -300,19 +300,19 @@ void check_flag(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
         }   
         
     }
-    else if (get_xy_cell(camera_pos->x, camera_pos->z) == 'B' && FLAG_PICKED)
+    else if (get_xy_cell(camera_pos->x, camera_pos->z) == START && FLAG_PICKED)
         end_level(camera_pos, camera_lookat, camera_rot);
 }
 // Increase score , and remove object when we pick an object
 void pickup_score(vec3* camera_pos)
 {
-    if (get_xy_cell(camera_pos->x, camera_pos->z) == 'S')
+    if (get_xy_cell(camera_pos->x, camera_pos->z) == SCORE)
     {
         if ((abs(camera_pos->x - (floor(camera_pos->x) + 0.5)) < 0.1) && 
             (abs(camera_pos->z - (floor(camera_pos->z) + 0.5)) < 0.1))
         {
             PlaySoundInChannel(score_sound, 0);
-            set_xy_cell(camera_pos->x, camera_pos->z, '0');
+            set_xy_cell(camera_pos->x, camera_pos->z, EMPTY);
             N_SCORE++;
             // Update lights to remove the one were the score object was
             set_lights();
@@ -322,11 +322,11 @@ void pickup_score(vec3* camera_pos)
 // React to the action of pressing a lever
 void enable_lever(vec3* camera_pos)
 {
-    if (get_xy_cell(camera_pos->x, camera_pos->z) == 'L' && glutKeyIsDown('e'))
+    if (get_xy_cell(camera_pos->x, camera_pos->z) == LEVER && glutKeyIsDown('e'))
     {
         PlaySoundInChannel(door_sound, 0);
         change_state_doors();
-        set_xy_cell(camera_pos->x, camera_pos->z, 'l');
+        set_xy_cell(camera_pos->x, camera_pos->z, LEVER_PRESSED);
     }
 }
 // Switch the state of doors
@@ -336,13 +336,13 @@ void change_state_doors()
     {
         for (int y = 0; y < SIZE; ++y)
         {
-            if (get_xy_cell(x, y) == 'D') 
+            if (get_xy_cell(x, y) == DOOR_CLOSE) 
             {
-                mazearray[x][y] = 'd';
+                mazearray[x][y] = DOOR_OPEN;
             }
-            else if (get_xy_cell(x, y) == 'd') 
+            else if (get_xy_cell(x, y) == DOOR_OPEN) 
             {
-                mazearray[x][y] = 'D';
+                mazearray[x][y] = DOOR_CLOSE;
             }
         }
     }  
@@ -366,8 +366,8 @@ void reset_flood()
 void flood_from_position(int x, int y, int count, vec3* camera_pos, vec3* camera_lookat, int up, int left, int right, int down)
 
 {   if (count > FLOOD_SIZE) return;
-    if (mazearray_flood[x][y] == 'F' || mazearray_flood[x][y] == 'D' || mazearray_flood[x][y] == 'X') return;   
-    mazearray_flood[x][y] = 'F';
+    if (mazearray_flood[x][y] == FLOOD || mazearray_flood[x][y] == DOOR_CLOSE || mazearray_flood[x][y] == WALL) return;   
+    mazearray_flood[x][y] = FLOOD;
 
     vec3 dir = VectorSub(*camera_lookat, *camera_pos);
     dir = SetVector(dir.x, 0, dir.z);
@@ -398,7 +398,7 @@ void flood_from_position(int x, int y, int count, vec3* camera_pos, vec3* camera
 }
 int is_flood(int x, int y)
 {
-    return (mazearray_flood[x][y] == 'F');
+    return (mazearray_flood[x][y] == FLOOD);
 }
 
 // Change the value of a cell
@@ -407,14 +407,14 @@ void set_xy_cell(double x, double y, char cell){mazearray[(int)floor(x)][(int)fl
 char get_xy_cell(double x, double y) 	       {return mazearray[(int)floor(x)][(int)floor(y)];}
 
 // Check for wall at a specific position, or next to a position
-int check_wall  (int x, int y) {return get_xy_cell(x, y) == 'X';}
+int check_wall  (int x, int y) {return get_xy_cell(x, y) == WALL;}
 int wall_east   (int x, int y) {return (x < SIZE - 1) ? check_wall(x+1, y) : 0;}
 int wall_north  (int x, int y) {return (y > 0) ? 		check_wall(x, y-1) : 0;}
 int wall_west   (int x, int y) {return (x > 0) ?        check_wall(x-1, y) : 0;}
 int wall_south  (int x, int y) {return (y < SIZE - 1) ? check_wall(x, y+1) : 0;}
 
 // Check for door at a specific position, or next to a position
-int check_door  (int x, int y) {return get_xy_cell(x, y) == 'D';}
+int check_door  (int x, int y) {return get_xy_cell(x, y) == DOOR_CLOSE;}
 int door_east   (int x, int y) {return (x < SIZE - 1) ? check_door(x+1, y) : 0;}
 int door_north  (int x, int y) {return (y > 0) ? 		check_door(x, y-1) : 0;}
 int door_west   (int x, int y) {return (x > 0) ?        check_door(x-1, y) : 0;}
@@ -424,7 +424,7 @@ int door_south  (int x, int y) {return (y < SIZE - 1) ? check_door(x, y+1) : 0;}
 int has_ground(int x, int y)
 {
     char cell = get_xy_cell(x,y);
-    return (cell=='0' || cell=='S' || cell=='I' || cell=='B' || cell== 'E' || cell=='d' || cell=='l' || cell=='L');
+    return (cell==EMPTY || cell==SCORE || cell==START || cell==END || cell==DOOR_OPEN || cell==LEVER_PRESSED || cell==LEVER);
 }
 
 // Simple getter functions
@@ -446,7 +446,7 @@ void set_default_camera(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
         for (int y = 0; y < SIZE; ++y)
         {
             // Find the start cell
-            if (get_xy_cell(x, y) == 'B') 
+            if (get_xy_cell(x, y) == START) 
             {
                 //reset_flood();
                 //flood_from_position(x, y, 0, camera_pos, camera_lookat, 0, 0, 0, 0);
@@ -538,8 +538,8 @@ void get_light_sources(GLfloat* array, int* nb)
         for (int y = 0; y < SIZE; ++y)
         {	
             // Draw lights for all special cells
-            if ((get_xy_cell(x, y) == 'B' || (get_xy_cell(x, y) == 'E' && !flag_picked()) || 
-                get_xy_cell(x, y) == 'S' || get_xy_cell(x, y) == 'L' || get_xy_cell(x, y) == 'l') && is_flood(x, y))
+            if ((get_xy_cell(x, y) == START || (get_xy_cell(x, y) == END && !flag_picked()) || 
+                get_xy_cell(x, y) == SCORE || get_xy_cell(x, y) == LEVER || get_xy_cell(x, y) == LEVER_PRESSED) && is_flood(x, y))
             {
                 array[3*(*nb)] = x + 0.5;
                 array[3*(*nb)+1] = 0.3;
@@ -576,11 +576,11 @@ void draw_text(vec3* camera_pos)
     sfDrawString(20, 40, level_name);
     sfDrawString(20, 60, score_name);
 
-    if (flag_picked()) sfDrawString(20, 20, "Bring the cup back to the starting cell");
-    else sfDrawString(20, 20, "Find the cup");
+    if (flag_picked()) sfDrawString(20, 20, "Bring the Holy Grail back to the starting cell");
+    else sfDrawString(20, 20, "Find the Holy Grail !");
 
     // Draw information about interaction
-    if (get_xy_cell(camera_pos->x, camera_pos->z) == 'L') sfDrawString(480, 200, "E");
+    if (get_xy_cell(camera_pos->x, camera_pos->z) == LEVER) sfDrawString(480, 200, "E");
 
 }
 // Draw a square using base matrix
@@ -792,7 +792,7 @@ void get_start_cell_position(int* x, int* y)
 {
     for (int i = 0; i < SIZE; ++i)
         for (int j = 0; j < SIZE; ++j)
-            if (get_xy_cell(i, j) == 'B') {*x = i; *y = j;}     
+            if (get_xy_cell(i, j) == START) {*x = i; *y = j;}     
 }
 
 ////////////////////////////////////////////////////////////////////////////
