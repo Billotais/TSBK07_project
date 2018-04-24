@@ -250,7 +250,7 @@ void display(void)
 				// Draw ground
 				glUniform1i(glGetUniformLocation(program, "texUnit"), 1);
 				glUniform1i(glGetUniformLocation(program, "bumpUnit"), 12);
-				if (get_xy_cell(x, y) != 'd' && get_xy_cell(x, y) != 'B' && get_xy_cell(x, y) != 'E') 
+				if (get_xy_cell(x, y) != DOOR_OPEN && get_xy_cell(x, y) != START && get_xy_cell(x, y) != END) 
 					draw_square(x, y, ground_pos, model, program);
 
 				// Draw walls
@@ -264,14 +264,14 @@ void display(void)
 				// Draw doors
 				glUniform1i(glGetUniformLocation(program, "texUnit"), 4);
 				glUniform1i(glGetUniformLocation(program, "bumpUnit"), 11);
-				if (get_xy_cell(x+1, y) == 'D') draw_square(x, y, east_wall_pos, model, program);
-				if (get_xy_cell(x-1, y) == 'D') draw_square(x, y, west_wall_pos, model, program);
-				if (get_xy_cell(x, y+1) == 'D') draw_square(x, y, south_wall_pos, model, program);
-				if (get_xy_cell(x, y-1) == 'D') draw_square(x, y, north_wall_pos, model, program);
-				if (get_xy_cell(x, y) == 'd') draw_square(x, y, ground_pos, model, program);
+				if (get_xy_cell(x+1, y) == DOOR_CLOSE) draw_square(x, y, east_wall_pos, model, program);
+				if (get_xy_cell(x-1, y) == DOOR_CLOSE) draw_square(x, y, west_wall_pos, model, program);
+				if (get_xy_cell(x, y+1) == DOOR_CLOSE) draw_square(x, y, south_wall_pos, model, program);
+				if (get_xy_cell(x, y-1) == DOOR_CLOSE) draw_square(x, y, north_wall_pos, model, program);
+				if (get_xy_cell(x, y) == DOOR_OPEN) draw_square(x, y, ground_pos, model, program);
 
 				// Draw beggining/end cell
-				if (get_xy_cell(x, y) == 'B' || get_xy_cell(x, y) == 'E')
+				if (get_xy_cell(x, y) == START || get_xy_cell(x, y) == END)
 				{
 					glUniform1i(glGetUniformLocation(program, "texUnit"), 6);
 					glUniform1i(glGetUniformLocation(program, "bumpUnit"), 13);
@@ -284,20 +284,20 @@ void display(void)
 
 				// Draw the flag
 				glUniform1i(glGetUniformLocation(program, "texUnit"), 7);
-				if (get_xy_cell(x, y) == 'E' || flag_picked())
+				if (get_xy_cell(x, y) == END || flag_picked())
 					draw_flag(x, 0, y, flag, program, &camera_pos, &camera_lookat);
 				
 				// draw score objects
 				glUniform1i(glGetUniformLocation(program, "texUnit"), 3);
-				if (get_xy_cell(x, y) == 'S') draw_score(x, y, score, program);
+				if (get_xy_cell(x, y) == SCORE) draw_score(x, y, score, program);
 
 				// draw lever
 				glUniform1i(glGetUniformLocation(program, "texUnit"), 5);
-				if (get_xy_cell(x, y) == 'L') draw_up_lever(x, y, lever, program);
-				if (get_xy_cell(x, y) == 'l') draw_down_lever(x, y, lever, program);
+				if (get_xy_cell(x, y) == LEVER) draw_up_lever(x, y, lever, program);
+				if (get_xy_cell(x, y) == LEVER_PRESSED) draw_down_lever(x, y, lever, program);
 
 				// Draw gold fountain
-				if (get_xy_cell(x, y) == 'B' && flag_picked())
+				if (get_xy_cell(x, y) == START && flag_picked())
 				{
 					glUniform1i(glGetUniformLocation(program, "texUnit"), 8);
 					simulate_particules(particles, part_x + 0.5, part_y + 0.5);

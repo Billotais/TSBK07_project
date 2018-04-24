@@ -19,7 +19,7 @@ ALuint victory_sound;
 ALuint cup_picked_sound;
 
 // Gamestate variables
-int SCORE = 0;
+int N_SCORE = 0;
 int FLAG_PICKED = 0;
 int CURRENT_LEVEL = 0;
 
@@ -313,7 +313,7 @@ void pickup_score(vec3* camera_pos)
         {
             PlaySoundInChannel(score_sound, 0);
             set_xy_cell(camera_pos->x, camera_pos->z, '0');
-            SCORE++;
+            N_SCORE++;
             // Update lights to remove the one were the score object was
             set_lights();
         }
@@ -429,7 +429,7 @@ int has_ground(int x, int y)
 
 // Simple getter functions
 int flag_picked() {return FLAG_PICKED;}
-int get_score()   {return SCORE;}
+int get_score()   {return N_SCORE;}
 int get_level()   {return CURRENT_LEVEL;}
 
 ///////////////////////////////////////////////////////////////////
@@ -698,7 +698,7 @@ void end_level(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
         get_start_cell_position(&part_x, &part_y);
 	    allocate_particles(&particles, part_x + 0.5, part_y + 0.5);
         // reset some values
-        SCORE = 0;
+        N_SCORE = 0;
         FLAG_PICKED = 0;
         // reset the camera and light positions
         set_default_camera(camera_pos, camera_lookat, camera_rot);
@@ -806,14 +806,7 @@ int max_dist = 0;
 int max_x = 0;
 int max_y = 0;
 
-#define EMPTY '0'
-#define WALL 'X'
-#define SOLVE '-'
-#define START 'B'
-#define END 'E' 
-#define FLOOD 'F'
-#define OTHER 'K'
-#define DOOR 'D'
+
 
 
 int create_maze() {
@@ -977,7 +970,7 @@ void generate_door()
     while (curr != END) // While not at end cell
     {
         if (curr != START) mazearray[x][y] = EMPTY; // Remoe the solve cells used to find path to end
-        if (curr_step == max_dist / 2) mazearray[x][y] = DOOR; // Draw door
+        if (curr_step == max_dist / 2) mazearray[x][y] = DOOR_CLOSE; // Draw door
             
         // Move further allong the way to the end
         if (mazearray[x][y+1] == SOLVE || mazearray[x][y+1] == END) y++;

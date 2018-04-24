@@ -14,6 +14,19 @@
 #define SIZE 21
 #define PI 3.1415
 
+#define EMPTY '0'
+#define WALL 'X'
+#define SOLVE '-'
+#define START 'B'
+#define END 'E' 
+#define FLOOD 'F'
+#define OTHER 'K'
+#define DOOR_CLOSE 'D'
+#define DOOR_OPEN 'd'
+#define LEVER 'L'
+#define LEVER_PRESSED 'l'
+#define SCORE 'S'
+
 typedef struct {
     double x, y, z;
     double angle;
