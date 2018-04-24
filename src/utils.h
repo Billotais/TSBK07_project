@@ -11,11 +11,19 @@
 #include "simplefont.h"
 #include <time.h>
 
+#define SIZE 21
+#define PI 3.1415
+
 typedef struct {
     double x, y, z;
     double angle;
     double vx, vy, vz;
 } particle;
+
+// Variables used by both main.c and utils.c
+GLuint program;
+particle** particles;
+int part_x, part_y;
 
 void draw_flag(double x, double z, double y, Model *model, GLuint program, vec3* camera_pos, vec3* camera_lookat);
 void draw_square(int x, int y, mat4 base,Model *model, GLuint program);

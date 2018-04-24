@@ -1,52 +1,40 @@
 #include "utils.h"
 
-
-#define PI 3.141592
-#define SIZE 21
 #define N_PARTICLES 1000
-// X are solid walls
-// x are not solid walls
-// 0 are empty cells
-// S is a score object
-// B is the beggining cell
-// E is the end cell
-// D is a door 
-// L is an interruptor
-
 #define WOBBLE_HEIGHT 30
 #define WOBBLE_SPEED 0.2
 #define DIST_TO_WALL 0.1
 
 #define HOR_SPEED 0.02
 #define VERT_SPEED 0.01
-#define ROT_SPEED 0.03
+#define ROT_SPEED 0.04
 
-#define FLOOD_SIZE 0.75*SIZE
+#define FLOOD_SIZE 0.9*SIZE
 
+// Sounds
 ALuint score_sound;
 ALuint door_sound;
 ALuint ambiance_sound;
 ALuint victory_sound;
 ALuint cup_picked_sound;
 
-
+// Gamestate variables
 int SCORE = 0;
 int FLAG_PICKED = 0;
 int CURRENT_LEVEL = 0;
 
-// Same program as in main.c, used to uplaod the lights to the GPU
+// Same variables as  in main.c
 extern GLuint program;
-
 extern particle** particles;
 extern int part_x, part_y;
 
+// For the caemra wobble
 double camera_bump_evolution = 0;
 
 // Real maze
 char mazearray[SIZE][SIZE];
 // Maze use for the flood algorithm
 char mazearray_flood[SIZE][SIZE];
-
 
 ///////////////////////////////////////////////////////////////////
 /* Game upate and run functions
@@ -659,7 +647,7 @@ void draw_flag(double x, double z, double y, Model *model, GLuint program, vec3*
         // Compute the current absolute angle of the player to rotate the flag in the correct orientation
         double angle = acos(DotProduct(Normalize(diff), SetVector(0, 0, 1)));
         if (DotProduct(Normalize(diff), SetVector(1, 0, 0)) < 0) angle = -angle;
-        //printf("angle : %f\n", angle);
+        
         model_rot = Ry(angle);
         model_scale = S(0.01, 0.01, 0.01);
     } 
@@ -715,7 +703,7 @@ void end_level(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
         // reset the camera and light positions
         set_default_camera(camera_pos, camera_lookat, camera_rot);
         set_lights();
-        printf("Level loaded\n");
+        
     }
     else 
     {	// Clear sound API
@@ -756,9 +744,8 @@ void reset_particle(particle* p, double x, double y, int i)
     p->z = y + 0.02 - (double)(rand() % 1000) / 25000.0;
     p->angle = rand() % 360;
     p->vx = 0.0025 - (double)(rand() % 1000) / 200000.0; 
-    p->vy = 0.012 + (double)(rand() % 1000) / 200000.0; 
+    p->vy = 0.012  + (double)(rand() % 1000) / 200000.0; 
     p->vz = 0.0025 - (double)(rand() % 1000) / 200000.0; 
-
 }
 void simulate_particules(particle** particles, double x, double y)
 {
@@ -808,11 +795,10 @@ void get_start_cell_position(int* x, int* y)
             if (get_xy_cell(i, j) == 'B') {*x = i; *y = j;}     
 }
 
-
 ////////////////////////////////////////////////////////////////////////////
 /* Maze generator functions
  * To create a new random maze when no other are available
- * Inspured by https://github.com/joewing/maze
+ * Inspired by https://github.com/joewing/maze
  */
 ////////////////////////////////////////////////////////////////////////////
 
@@ -846,7 +832,6 @@ int create_maze() {
     
     replace_other_by_empty();
 
-    printf("salut");
     return 0;
 }
 
@@ -953,8 +938,7 @@ void solve_maze() {
 
     /* Replace the entry and exit. */
     mazearray[1][1] = START;
-    mazearray[max_x][max_y] = END;
-   
+    mazearray[max_x][max_y] = END; 
 }
 
 // Reset mazearray_flood to allow the flood algorithm to work
@@ -995,7 +979,6 @@ void generate_door()
         if (curr != START) mazearray[x][y] = EMPTY; // Remoe the solve cells used to find path to end
         if (curr_step == max_dist / 2) mazearray[x][y] = DOOR; // Draw door
             
-        }
         // Move further allong the way to the end
         if (mazearray[x][y+1] == SOLVE || mazearray[x][y+1] == END) y++;
         else if (mazearray[x][y-1] == SOLVE || mazearray[x][y-1] == END) y--;

@@ -15,15 +15,9 @@
 #include "simplefont.h"
 
 
-// Globals
-
-
+// For optimization statistics
 double total_cell = 0;
 double total_count = 0;
-
-#define PI 3.1415
-
-#define SIZE 21 // Width and height of maze
 
 // Models
 Model *skybox;
@@ -51,15 +45,11 @@ GLuint wallBumpTex;
 GLuint doorBumpTex;
 GLuint objectiveBumpTex;
 
-
 // Reference to shader program
 GLuint program;
 GLuint program_sky;
 
-// Position variables
-
 // Camera 
-
 mat4 camera;
 vec3 camera_pos;
 vec3 camera_rot;
@@ -76,8 +66,9 @@ mat4 south_wall_pos;
 mat4 west_wall_pos;
 mat4 ground_pos;
 
-particle** particles;
-int part_x, part_y;
+// Array of particles and spawn position of them
+extern particle** particles;
+extern int part_x, part_y;
 
 void reshape(GLsizei w, GLsizei h)
 {
@@ -88,9 +79,8 @@ void reshape(GLsizei w, GLsizei h)
 
 void init(void)
 {
-	 // init font
+	 // init font and sound
 	sfMakeRasterFont();
-	
 	init_sound();
 	
 	// Try to load the level
@@ -107,9 +97,8 @@ void init(void)
 	lever = LoadModelPlus("../models/bunnyplus.obj");
 	flag = LoadModelPlus("../models/trophy.obj");
 	part = LoadModelPlus("../models/coin.obj");
-	//flag=lever;
+
 	// Load textures and bump maps
-	
 	LoadTGATextureSimple("../models/TexturesCom_Cobblestone6_1024_albedo.tga", &groundTex);
 	LoadTGATextureSimple("../models/TexturesCom_OldWoodPlanks_1024_albedo.tga", &doorTex);
 	LoadTGATextureSimple("../models/TexturesCom_StoneWall2_1024_albedo.tga", &wallTex);
@@ -159,7 +148,6 @@ void init(void)
 	glActiveTexture(GL_TEXTURE13);
 	glBindTexture(GL_TEXTURE_2D, objectiveBumpTex);
 
-
 	// GL inits
 	dumpInfo();
 	glClearColor(0.2,0.2,0.5,0);
@@ -192,7 +180,7 @@ void init(void)
 
 	printError("init arrays");
 	
-	
+	// Allocate particles
 	get_start_cell_position(&part_x, &part_y);
 	allocate_particles(&particles, part_x + 0.5, part_y + 0.5);
 
@@ -209,10 +197,7 @@ void display(void)
 
 	// clear the screen
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
 
-
-	//PlaySoundInChannel(score_sound, 0);
 
 	// Main call that will update the position of the player and the state of the maze
 	update(&camera_pos, &camera_lookat, &camera_rot);
@@ -247,14 +232,11 @@ void display(void)
 	GLfloat dir[3] = {camera_lookat.x - camera_pos.x, camera_lookat.y - camera_pos.y, camera_lookat.z - camera_pos.z};
 	glUniform3fv(glGetUniformLocation(program, "cameraOrientation"),  1, dir);
 	
-	
-	int x_from = 1, x_to = SIZE-1, y_from = 1, y_to = SIZE - 1;
-	
 	// Go through each cell of the maze
 	int count = 0;
-	for (int y = y_from; y < y_to; ++y)
+	for (int y = 1; y < SIZE-1; ++y)
 	{
-		for (int x = x_from; x < x_to; ++x)
+		for (int x = 1; x < SIZE-1; ++x)
 		{	
 			if (has_ground(x, y) && is_flood(x, y))
 			{
@@ -288,7 +270,7 @@ void display(void)
 				if (get_xy_cell(x, y-1) == 'D') draw_square(x, y, north_wall_pos, model, program);
 				if (get_xy_cell(x, y) == 'd') draw_square(x, y, ground_pos, model, program);
 
-				// Draw beggining cell
+				// Draw beggining/end cell
 				if (get_xy_cell(x, y) == 'B' || get_xy_cell(x, y) == 'E')
 				{
 					glUniform1i(glGetUniformLocation(program, "texUnit"), 6);
@@ -305,7 +287,7 @@ void display(void)
 				if (get_xy_cell(x, y) == 'E' || flag_picked())
 					draw_flag(x, 0, y, flag, program, &camera_pos, &camera_lookat);
 				
-				// Show score objects
+				// draw score objects
 				glUniform1i(glGetUniformLocation(program, "texUnit"), 3);
 				if (get_xy_cell(x, y) == 'S') draw_score(x, y, score, program);
 
@@ -324,9 +306,7 @@ void display(void)
 			}
 		}
 	}
-	simulate_particules(particles, part_x + 0.5, part_y + 0.5);
-
-	// for demonstration purposes
+	// for demonstration purposes, show % of drawn cells
 
 	total_cell += (double)count/4.41;
 	total_count += 1;
@@ -338,14 +318,8 @@ void display(void)
 	char stats_avg[50];
 	sprintf(stats_avg, "Average : %.2f%%", total_cell/total_count);
 	sfDrawString(650, 40, stats_avg);
-	//printf("Salut");
-    
-	
 
-	
-
-
-
+	// Draw UI
 	draw_text(&camera_pos);
 	
 	printError("display");
