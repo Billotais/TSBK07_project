@@ -51,6 +51,7 @@ void update(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
     {
         reset_flood();
         flood_from_position((int)floor(camera_pos->x),(int)floor(camera_pos->z),0, camera_pos, camera_lookat, 0, 0, 0, 0);
+        generate_frustum_culling(camera_pos, camera_lookat);
         set_lights();
     }
     
@@ -156,7 +157,7 @@ void update(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
     }
     if (!ChannelIsPlaying(1)) PlaySoundInChannel(ambiance_sound, 1);
 
-    generate_frustum_culling(camera_pos, camera_lookat);
+    
     
 }
 // Check that the current position is valid, along the walls
@@ -1034,6 +1035,7 @@ void generate_frustum_culling(vec3* camera_pos, vec3* camera_lookat)
 
     // Draw the side lines
     plot_frustum(x-dir_x, y-dir_y, dir_x, dir_y);
+    
     // FIll in the middle
     flood_frustum(x, y);
 
