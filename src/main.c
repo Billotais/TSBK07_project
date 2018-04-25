@@ -99,20 +99,20 @@ void init(void)
 	part = LoadModelPlus("../models/coin.obj");
 
 	// Load textures and bump maps
-	LoadTGATextureSimple("../models/TexturesCom_Cobblestone6_1024_albedo.tga", &groundTex);
-	LoadTGATextureSimple("../models/TexturesCom_OldWoodPlanks_1024_albedo.tga", &doorTex);
-	LoadTGATextureSimple("../models/TexturesCom_StoneWall2_1024_albedo.tga", &wallTex);
-	LoadTGATextureSimple("../models/SkyBox512.tga", &skyTex);
-	LoadTGATextureSimple("../models/chest.tga", &scoreTex);
-	LoadTGATextureSimple("../models/door.tga", &leverTex);
-	LoadTGATextureSimple("../models/TexturesCom_RustedPlates_1024_albedo.tga", &objectiveTex);
-	LoadTGATextureSimple("../models/TexturesCom_GoldLeaf_1024_albedo.tga", &flagTex);
-	LoadTGATextureSimple("../models/TexturesCom_GoldLeaf_1024_albedo.tga", &particleTex);
+	LoadTGATextureSimple("../textures/ground_albedo.tga", &groundTex);
+	LoadTGATextureSimple("../textures/wood_albedo.tga", &doorTex);
+	LoadTGATextureSimple("../textures/wall_albedo.tga", &wallTex);
+	LoadTGATextureSimple("../textures/skybox.tga", &skyTex);
+	LoadTGATextureSimple("../textures/chest.tga", &scoreTex);
+	LoadTGATextureSimple("../textures/door.tga", &leverTex);
+	LoadTGATextureSimple("../textures/plates_albedo.tga", &objectiveTex);
+	LoadTGATextureSimple("../textures/gold.tga", &flagTex);
+	LoadTGATextureSimple("../textures/gold.tga", &particleTex);
 
-	LoadTGATextureSimple("../models/TexturesCom_StoneWall2_1024_normal.tga", &wallBumpTex);
-	LoadTGATextureSimple("../models/TexturesCom_OldWoodPlanks_1024_normal.tga", &doorBumpTex);
-	LoadTGATextureSimple("../models/TexturesCom_Cobblestone6_1024_normal.tga", &groundBumpTex);
-	LoadTGATextureSimple("../models/TexturesCom_RustedPlates_1024_normal.tga", &objectiveBumpTex);
+	LoadTGATextureSimple("../textures/wall_normal.tga", &wallBumpTex);
+	LoadTGATextureSimple("../textures/wood_normal.tga", &doorBumpTex);
+	LoadTGATextureSimple("../textures/ground_normal.tga", &groundBumpTex);
+	LoadTGATextureSimple("../textures/plates_normal.tga", &objectiveBumpTex);
 
 	
 
