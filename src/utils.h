@@ -103,4 +103,13 @@ void reset_generate_end();
 void generate_end(int x, int y, int count);
 void generate_door();
 void replace_other_by_empty();
+
+void generate_frustum_culling(vec3* camera_pos, vec3* camera_lookat);
+void print_culling();
+void plotLineLow(int x0, int y0, int x1, int y1);
+void plotLineHigh(int x0, int y0, int x1, int y1);
+void plotLine(int x0,int y0, int x1,int y1);
+void plot_frustum(int x, int y, int dir_x, int dir_y);
+void flood_frustum(int x, int y);
+int in_culling(int x, int y);
 #endif

@@ -238,71 +238,75 @@ void display(void)
 	{
 		for (int x = 1; x < SIZE-1; ++x)
 		{	
-			if (has_ground(x, y) && is_flood(x, y))
+			if (has_ground(x, y))
 			{
-				count++;
-				// Upload current cell data to GPU to optimise lightning
-				glUniform1i(glGetUniformLocation(program, "x"), x);
-				glUniform1i(glGetUniformLocation(program, "y"), y);
-				// For the following draws, we will use the bump map
-				glUniform1i(glGetUniformLocation(program, "bumpMap"), true);
-
-				// Draw ground
-				glUniform1i(glGetUniformLocation(program, "texUnit"), 1);
-				glUniform1i(glGetUniformLocation(program, "bumpUnit"), 12);
-				if (get_xy_cell(x, y) != DOOR_OPEN && get_xy_cell(x, y) != START && get_xy_cell(x, y) != END) 
-					draw_square(x, y, ground_pos, model, program);
-
-				// Draw walls
-				glUniform1i(glGetUniformLocation(program, "texUnit"), 2);
-				glUniform1i(glGetUniformLocation(program, "bumpUnit"), 10);
-				if (wall_north(x, y)) draw_square(x, y, north_wall_pos, model, program);
-				if (wall_east(x, y))  draw_square(x, y, east_wall_pos,  model, program);
-				if (wall_south(x, y)) draw_square(x, y, south_wall_pos, model, program);
-				if (wall_west(x, y))  draw_square(x, y, west_wall_pos,  model, program);
-
-				// Draw doors
-				glUniform1i(glGetUniformLocation(program, "texUnit"), 4);
-				glUniform1i(glGetUniformLocation(program, "bumpUnit"), 11);
-				if (get_xy_cell(x+1, y) == DOOR_CLOSE) draw_square(x, y, east_wall_pos, model, program);
-				if (get_xy_cell(x-1, y) == DOOR_CLOSE) draw_square(x, y, west_wall_pos, model, program);
-				if (get_xy_cell(x, y+1) == DOOR_CLOSE) draw_square(x, y, south_wall_pos, model, program);
-				if (get_xy_cell(x, y-1) == DOOR_CLOSE) draw_square(x, y, north_wall_pos, model, program);
-				if (get_xy_cell(x, y) == DOOR_OPEN) draw_square(x, y, ground_pos, model, program);
-
-				// Draw beggining/end cell
-				if (get_xy_cell(x, y) == START || get_xy_cell(x, y) == END)
+				if ((in_culling(x, y) || glutKeyIsDown('g')) && (is_flood(x, y) || glutKeyIsDown('f')))
 				{
-					glUniform1i(glGetUniformLocation(program, "texUnit"), 6);
-					glUniform1i(glGetUniformLocation(program, "bumpUnit"), 13);
-					draw_square(x, y, ground_pos, model, program);
+					count++;
+					// Upload current cell data to GPU to optimise lightning
+					glUniform1i(glGetUniformLocation(program, "x"), x);
+					glUniform1i(glGetUniformLocation(program, "y"), y);
+					// For the following draws, we will use the bump map
+					glUniform1i(glGetUniformLocation(program, "bumpMap"), true);
+
+					// Draw ground
+					glUniform1i(glGetUniformLocation(program, "texUnit"), 1);
+					glUniform1i(glGetUniformLocation(program, "bumpUnit"), 12);
+					if (get_xy_cell(x, y) != DOOR_OPEN && get_xy_cell(x, y) != START && get_xy_cell(x, y) != END) 
+						draw_square(x, y, ground_pos, model, program);
+
+					// Draw walls
+					glUniform1i(glGetUniformLocation(program, "texUnit"), 2);
+					glUniform1i(glGetUniformLocation(program, "bumpUnit"), 10);
+					if (wall_north(x, y)) draw_square(x, y, north_wall_pos, model, program);
+					if (wall_east(x, y))  draw_square(x, y, east_wall_pos,  model, program);
+					if (wall_south(x, y)) draw_square(x, y, south_wall_pos, model, program);
+					if (wall_west(x, y))  draw_square(x, y, west_wall_pos,  model, program);
+
+					// Draw doors
+					glUniform1i(glGetUniformLocation(program, "texUnit"), 4);
+					glUniform1i(glGetUniformLocation(program, "bumpUnit"), 11);
+					if (get_xy_cell(x+1, y) == DOOR_CLOSE) draw_square(x, y, east_wall_pos, model, program);
+					if (get_xy_cell(x-1, y) == DOOR_CLOSE) draw_square(x, y, west_wall_pos, model, program);
+					if (get_xy_cell(x, y+1) == DOOR_CLOSE) draw_square(x, y, south_wall_pos, model, program);
+					if (get_xy_cell(x, y-1) == DOOR_CLOSE) draw_square(x, y, north_wall_pos, model, program);
+					if (get_xy_cell(x, y) == DOOR_OPEN) draw_square(x, y, ground_pos, model, program);
+
+					// Draw beggining/end cell
+					if (get_xy_cell(x, y) == START || get_xy_cell(x, y) == END)
+					{
+						glUniform1i(glGetUniformLocation(program, "texUnit"), 6);
+						glUniform1i(glGetUniformLocation(program, "bumpUnit"), 13);
+						draw_square(x, y, ground_pos, model, program);
+					}
+					
+
+					// Now we don't want to use bump mapping for props
+					glUniform1i(glGetUniformLocation(program, "bumpMap"), false);
+
+					// Draw the flag
+					glUniform1i(glGetUniformLocation(program, "texUnit"), 7);
+					if (get_xy_cell(x, y) == END || flag_picked())
+						draw_flag(x, 0, y, flag, program, &camera_pos, &camera_lookat);
+					
+					// draw score objects
+					glUniform1i(glGetUniformLocation(program, "texUnit"), 3);
+					if (get_xy_cell(x, y) == SCORE) draw_score(x, y, score, program);
+
+					// draw lever
+					glUniform1i(glGetUniformLocation(program, "texUnit"), 5);
+					if (get_xy_cell(x, y) == LEVER) draw_up_lever(x, y, lever, program);
+					if (get_xy_cell(x, y) == LEVER_PRESSED) draw_down_lever(x, y, lever, program);
+
+					// Draw gold fountain
+					if (get_xy_cell(x, y) == START && flag_picked())
+					{
+						glUniform1i(glGetUniformLocation(program, "texUnit"), 8);
+						simulate_particules(particles, part_x + 0.5, part_y + 0.5);
+						draw_particles(particles, part, program);
+					}
 				}
 				
-
-				// Now we don't want to use bump mapping for props
-				glUniform1i(glGetUniformLocation(program, "bumpMap"), false);
-
-				// Draw the flag
-				glUniform1i(glGetUniformLocation(program, "texUnit"), 7);
-				if (get_xy_cell(x, y) == END || flag_picked())
-					draw_flag(x, 0, y, flag, program, &camera_pos, &camera_lookat);
-				
-				// draw score objects
-				glUniform1i(glGetUniformLocation(program, "texUnit"), 3);
-				if (get_xy_cell(x, y) == SCORE) draw_score(x, y, score, program);
-
-				// draw lever
-				glUniform1i(glGetUniformLocation(program, "texUnit"), 5);
-				if (get_xy_cell(x, y) == LEVER) draw_up_lever(x, y, lever, program);
-				if (get_xy_cell(x, y) == LEVER_PRESSED) draw_down_lever(x, y, lever, program);
-
-				// Draw gold fountain
-				if (get_xy_cell(x, y) == START && flag_picked())
-				{
-					glUniform1i(glGetUniformLocation(program, "texUnit"), 8);
-					simulate_particules(particles, part_x + 0.5, part_y + 0.5);
-					draw_particles(particles, part, program);
-				}
 			}
 		}
 	}
@@ -318,6 +322,11 @@ void display(void)
 	char stats_avg[50];
 	sprintf(stats_avg, "Average : %.2f%%", total_cell/total_count);
 	sfDrawString(650, 40, stats_avg);
+
+	if (glutKeyIsDown('f')) sfDrawString(650, 60, "Flood algorithm disabled");
+	if (!glutKeyIsDown('f')) sfDrawString(650, 60, "Flood algorithm enabled");
+	if (glutKeyIsDown('g')) sfDrawString(650, 80, "Culling algorithm disabled");
+	if (!glutKeyIsDown('g')) sfDrawString(650, 80, "Culling algorithm enabled");
 
 	// Draw UI
 	draw_text(&camera_pos);

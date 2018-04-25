@@ -36,6 +36,8 @@ char mazearray[SIZE][SIZE];
 // Maze use for the flood algorithm
 char mazearray_flood[SIZE][SIZE];
 
+char culling_grid[SIZE][SIZE];
+
 ///////////////////////////////////////////////////////////////////
 /* Game upate and run functions
  * Move camera, trigger levers and score, flags, ...
@@ -153,6 +155,8 @@ void update(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
         check_corner(camera_pos,camera_lookat);
     }
     if (!ChannelIsPlaying(1)) PlaySoundInChannel(ambiance_sound, 1);
+
+    generate_frustum_culling(camera_pos, camera_lookat);
     
 }
 // Check that the current position is valid, along the walls
@@ -989,4 +993,155 @@ void replace_other_by_empty()
     for (int x = 0; x < SIZE; ++x)
         for (int y = 0; y < SIZE; ++y)
             if (mazearray[x][y] == OTHER) mazearray[x][y] = EMPTY;
+}
+
+
+////////////////////////////////////////////////////////////////////////////
+/* Frustum calling 
+ * On grid level
+ * Used pseudocode from https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
+ */
+////////////////////////////////////////////////////////////////////////////
+
+void print_culling()
+{
+    for (int i = 0; i < SIZE; ++i)
+    {
+        for (int j = 0; j < SIZE; ++j)
+        {
+            printf("%c",culling_grid[j][i]);
+        }
+        printf("\n");
+    }
+}
+
+void generate_frustum_culling(vec3* camera_pos, vec3* camera_lookat)
+{
+    // Init grid
+    for (int i = 0; i < SIZE; ++i)
+    {
+        for (int j = 0; j < SIZE; ++j)
+        {
+            if (i == 0 || j == 0 || j == SIZE-1 || i == SIZE-1) culling_grid[i][j] = WALL;
+            else culling_grid[i][j] = EMPTY;
+        }
+    }
+    // get current position and direction of view
+    int x = (int)floor(camera_pos->x);
+    int y = (int)floor(camera_pos->z);
+    int dir_x = (int) ((floor(camera_lookat->x) - floor(camera_pos->x)));
+    int dir_y = (int) ((floor(camera_lookat->z) - floor(camera_pos->z)));
+
+    // Draw the side lines
+    plot_frustum(x-dir_x, y-dir_y, dir_x, dir_y);
+    // FIll in the middle
+    flood_frustum(x, y);
+
+    //print_culling();
+}
+void plotLineLow(int x0, int y0, int x1, int y1)
+{
+    int dx = x1 - x0;
+    int dy = y1 - y0;
+    int yi = 1;
+    if (dy < 0) {
+        yi = -1;
+        dy = -dy;
+    }
+    int D = 2*dy - dx;
+    int y = y0;
+    for (int x = x0; x <= x1; ++x)
+    {
+        if (x >= 0 && x < SIZE && y >= 0 && y < SIZE) culling_grid[x][y] = FLOOD;
+        if (D > 0) {
+            y = y + yi;
+            D = D - 2*dx;
+        }
+        D = D + 2*dy;
+    }
+}
+void plotLineHigh(int x0, int y0, int x1, int y1)
+{
+    int dx = x1 - x0;
+    int dy = y1 - y0;
+    int xi = 1;
+    if (dx < 0) {
+        xi = -1;
+        dx = -dx;
+    }
+    int D = 2*dx - dy;
+    int x = x0;
+
+    for (int y = y0; y <= y1; ++y)
+    {
+        if (x >= 0 && x < SIZE && y >= 0 && y < SIZE) culling_grid[x][y] = FLOOD;
+        if (D > 0) {
+            x = x + xi;
+            D = D - 2*dy;
+        }
+        D = D + 2*dx;
+    }
+}
+
+void plotLine(int x0,int y0, int x1,int y1)
+{
+  if (fabs(y1 - y0) < fabs(x1 - x0)) {
+    if (x0 > x1) plotLineLow(x1, y1, x0, y0); // West quadrant
+    else plotLineLow(x0, y0, x1, y1); // East quadrant
+  }
+  else {
+    if (y0 > y1) plotLineHigh(x1, y1, x0, y0); // South quadrant
+    else plotLineHigh(x0, y0, x1, y1); // North quadrant
+  }
+}
+void plot_frustum(int x, int y, int dir_x, int dir_y)
+{
+    int prov_x = x;
+    int prov_y = y;
+
+    int count = 0;
+    // G0 forward 
+    while (count < SIZE)
+    {
+        prov_x += dir_x;
+        prov_y += dir_y;
+        count++;
+    }
+    // Go on the left to create a 45° impression
+    int left_dir_y = dir_x;
+    int left_dir_x = -dir_y;
+    int left_prov_x = prov_x;
+    int left_prov_y = prov_y;
+    for (int i = 0; i < count; ++i)
+    {
+        left_prov_x += left_dir_x;
+        left_prov_y += left_dir_y;
+    }
+    plotLine(x, y, left_prov_x, left_prov_y);
+
+    // Go on the right to create a 45° impression
+    int right_dir_y = -dir_x;
+    int right_dir_x = dir_y;
+    int right_prov_x = prov_x;
+    int right_prov_y = prov_y;
+    for (int i = 0; i < count; ++i)
+    {
+        right_prov_x += right_dir_x;
+        right_prov_y += right_dir_y;
+    }
+    plotLine(x, y, right_prov_x, right_prov_y);
+}
+// Fill the frustum
+void flood_frustum(int x, int y)
+{
+    if (culling_grid[x][y] == FLOOD || culling_grid[x][y] == WALL) return;
+    else culling_grid[x][y] = FLOOD;
+    flood_frustum(x+1, y);
+    flood_frustum(x-1, y);
+    flood_frustum(x, y+1);
+    flood_frustum(x, y-1);
+}
+int in_culling(int x, int y)
+{
+    return culling_grid[x][y] == FLOOD;
 }
