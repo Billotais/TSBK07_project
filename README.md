@@ -2,7 +2,7 @@
 
 ## The Quest for the Holy Grail - 3D Maze Game
 
-Created by [Felix Eklöf](mailto:felek877@student.liu.se) and [Loïs Bilat](loibi806@student.liu.se)
+Created by [Felix Eklöf](mailto:felek877@student.liu.se) and [Loïs Bilat](mailto:loibi806@student.liu.se)
 
 ### How to run
 
