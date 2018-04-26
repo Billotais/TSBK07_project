@@ -811,19 +811,14 @@ int max_dist = 0;
 int max_x = 0;
 int max_y = 0;
 
-
-
-
 int create_maze() {
 
-    
     /* Generate and display the maze. */
     generate_empty();
 
     // Find end cell coordinatesm store it in max_x, max_y
     reset_generate_end();
     generate_end(1,1,0);
-
 
     solve_maze();
     generate_door();
@@ -832,8 +827,6 @@ int create_maze() {
 
     return 0;
 }
-
-
 
 /*  Carve the maze starting at x, y. */
 void carve_maze(int x, int y) {
@@ -869,8 +862,7 @@ void carve_maze(int x, int y) {
             dir = (dir + 1) % 4;
             count += 1;
         }
-   }
-
+    }
 }
 
 /* Generate maze in matrix maze with size width, height. */
@@ -892,7 +884,6 @@ void generate_empty() {
         for(int x = 1; x < SIZE; x += 2) 
             carve_maze(x, y);
 }
-
 
 /* Solve the maze. */
 void solve_maze() {
@@ -996,7 +987,6 @@ void replace_other_by_empty()
             if (mazearray[x][y] == OTHER) mazearray[x][y] = EMPTY;
 }
 
-
 ////////////////////////////////////////////////////////////////////////////
 /* Frustum calling 
  * On grid level
@@ -1039,7 +1029,7 @@ void generate_frustum_culling(vec3* camera_pos, vec3* camera_lookat)
     // FIll in the middle
     flood_frustum(x, y);
 
-    //print_culling();
+    print_culling();
 }
 void plotLineLow(int x0, int y0, int x1, int y1)
 {
@@ -1087,13 +1077,13 @@ void plotLineHigh(int x0, int y0, int x1, int y1)
 
 void plotLine(int x0,int y0, int x1,int y1)
 {
-  if (fabs(y1 - y0) < fabs(x1 - x0)) {
-    if (x0 > x1) plotLineLow(x1, y1, x0, y0); // West quadrant
-    else plotLineLow(x0, y0, x1, y1); // East quadrant
-  }
-  else {
-    if (y0 > y1) plotLineHigh(x1, y1, x0, y0); // South quadrant
-    else plotLineHigh(x0, y0, x1, y1); // North quadrant
+    if (fabs(y1 - y0) < fabs(x1 - x0)) {
+        if (x0 > x1) plotLineLow(x1, y1, x0, y0); // West quadrant
+        else plotLineLow(x0, y0, x1, y1); // East quadrant
+    }
+    else {
+        if (y0 > y1) plotLineHigh(x1, y1, x0, y0); // South quadrant
+        else plotLineHigh(x0, y0, x1, y1); // North quadrant
   }
 }
 void plot_frustum(int x, int y, int dir_x, int dir_y)
