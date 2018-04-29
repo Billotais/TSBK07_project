@@ -247,7 +247,8 @@ void display(void)
 					glUniform1i(glGetUniformLocation(program, "x"), x);
 					glUniform1i(glGetUniformLocation(program, "y"), y);
 					// For the following draws, we will use the bump map
-					glUniform1i(glGetUniformLocation(program, "bumpMap"), true);
+					if (glutKeyIsDown('n')) glUniform1i(glGetUniformLocation(program, "bumpMap"), false);
+					else glUniform1i(glGetUniformLocation(program, "bumpMap"), true);
 
 					// Draw ground
 					glUniform1i(glGetUniformLocation(program, "texUnit"), 1);

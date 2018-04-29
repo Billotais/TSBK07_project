@@ -1,4 +1,4 @@
-# TSBK07 project
+    # TSBK07 project
 
 ## The Quest for the Holy Grail - 3D Maze Game
 

@@ -1023,6 +1023,7 @@ void generate_frustum_culling(vec3* camera_pos, vec3* camera_lookat)
     int dir_x = (int) ((floor(camera_lookat->x) - floor(camera_pos->x)));
     int dir_y = (int) ((floor(camera_lookat->z) - floor(camera_pos->z)));
 
+    if (x < 0 || x >= SIZE || y < 0 || y >= SIZE) return;
     // Draw the side lines
     plot_frustum(x-dir_x, y-dir_y, dir_x, dir_y);
     
@@ -1125,7 +1126,8 @@ void plot_frustum(int x, int y, int dir_x, int dir_y)
 }
 // Fill the frustum
 void flood_frustum(int x, int y)
-{
+{   
+    if (x < 0 || x >= SIZE || y < 0 || y >= SIZE) return;
     if (culling_grid[x][y] == FLOOD || culling_grid[x][y] == WALL) return;
     else culling_grid[x][y] = FLOOD;
     flood_frustum(x+1, y);
@@ -1134,6 +1136,7 @@ void flood_frustum(int x, int y)
     flood_frustum(x, y-1);
 }
 int in_culling(int x, int y)
-{
+{   
+    if (x < 0 || x >= SIZE || y < 0 || y >= SIZE) return 0;
     return culling_grid[x][y] == FLOOD;
 }
