@@ -2,7 +2,7 @@
 
 ## The Quest for the Holy Grail - 3D Maze Game
 
-Created by [Felix Eklöf](mailto:felek877@student.liu.se) and [Loïs Bilat](loibi806@student.liu.se)
+Created by [Felix Eklöf](mailto:felek877@student.liu.se) and [Loïs Bilat](mailto:loibi806@student.liu.se) for the TSBK07 - Computer Graphics course project at Linköping Universitet
 
 ### How to run
 
@@ -12,7 +12,7 @@ Go into the *src* folder, and run
 $ make
 ```
 
-To compile and run the project. The GCC compiler and OpenGL are needed. All other libraries are included in the repository.
+to compile and run the project. The GCC compiler and OpenGL are needed. All other libraries are included in the repository. Tested on Linux using GCC 7.3.1 - OpenGL 4.5 - Mesa 18.0.1
 
 ### About
 
@@ -22,7 +22,7 @@ To move, use the **WASD** keys. To rotate the camera, use the arrow keys. You ca
 
 ### Sources
 
-We used the following [website](https://www.textures.com/browse/3d-scans/114548) to get bumped textures.
+We used the [Textures.com](https://www.textures.com/browse/3d-scans/114548) to get our textures.
 
 Models where found on [Turbosquid](https://www.turbosquid.com/), [cgtrader](https://www.cgtrader.com/free-3d-models) and [Free3D](https://free3d.com/).
 
