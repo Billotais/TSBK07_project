@@ -38,7 +38,7 @@ void main(void)
 
 	// Define reflectivity and specular exponent of material
 	float specularExponent = 30;
-	vec3 reflectivity = vec3(1);
+	vec3 reflectivity = vec3(0.8);
 
 	vec4 total_light = vec4(0);
 	
@@ -73,11 +73,10 @@ void main(void)
 							max(0, reflectivity.y*light_level.y*costheta),
 							max(0, reflectivity.z*light_level.z*costheta));
 
-		
 		// Specular component
 		vec3 r = normalize(2*normalize(transfer_normal_transformed)*dot(vertex_to_light, normalize(transfer_normal_transformed)) - vertex_to_light);
 		vec3 vertex_to_camera = normalize(cameraPosition - vec3(transfer_vertex));
-		vec3 specular = reflectivity*light_level*pow(max(0,dot(r, vertex_to_camera)), specularExponent);
+		vec3 specular = 0.4*reflectivity*light_level*pow(max(0,dot(r, vertex_to_camera)), specularExponent);
 
 		// Attenutation
 		float attenuation = (1.0 / (1.0 + (0.05 * distance * distance)));
