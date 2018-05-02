@@ -47,6 +47,12 @@ char culling_grid[SIZE][SIZE];
 // Main function, react to keyboard, moves the camera, check for objectives and collisions
 void update(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
 {
+    // Allow us to go to next level
+    if (glutKeyIsDown('p') && mazearray[(int)floor(camera_pos->x)][(int)floor(camera_pos->z)] != 'B')
+    {
+        end_level(camera_pos, camera_lookat, camera_rot);
+    }
+
     if (!glutKeyIsDown('q'))
     {
         reset_flood();
@@ -821,9 +827,31 @@ int create_maze() {
     generate_end(1,1,0);
 
     solve_maze();
-    generate_door();
-    
     replace_other_by_empty();
+
+    // Create door and save cell before it
+    int door_x = 0; 
+    int door_y = 0;
+    generate_door(&door_x, &door_y);
+    
+    // FInd best location for lever
+    max_dist = 0; max_x = 0; max_y = 0;
+    reset_generate_end();
+    generate_end(door_x, door_y, 0);
+    
+    // if lever to close to start, regenerate maze
+    if (max_x - 1 < 4 && max_y - 1 < 4)
+    {
+        create_maze();
+        return;
+    }
+    // Set lever
+    mazearray[max_x][max_y] = 'L';
+    
+    
+    
+
+    print_maze();
 
     return 0;
 }
@@ -956,18 +984,25 @@ void generate_end(int x, int y, int count)
     }
 }
 
-void generate_door()
+void generate_door(int* x_out, int* y_out)
 {
     int curr_step = 0;
     int curr = START;
     int x = 1, y = 1; // Start position
-    
+    int prev_x = x, prev_y = y;
 
     while (curr != END) // While not at end cell
     {
         if (curr != START) mazearray[x][y] = EMPTY; // Remoe the solve cells used to find path to end
-        if (curr_step == max_dist / 2) mazearray[x][y] = DOOR_CLOSE; // Draw door
+        if (curr_step == max_dist / 2) 
+        {
+            mazearray[x][y] = DOOR_CLOSE; // Draw door
+            *x_out = prev_x; // Store cell next to door
+            *y_out = prev_y; 
+        }
             
+        prev_x = x;
+        prev_y = y;
         // Move further allong the way to the end
         if (mazearray[x][y+1] == SOLVE || mazearray[x][y+1] == END) y++;
         else if (mazearray[x][y-1] == SOLVE || mazearray[x][y-1] == END) y--;
@@ -979,6 +1014,7 @@ void generate_door()
     }
 
 }
+
 // Replace OTHER cells used during solve by empty cells
 void replace_other_by_empty()
 {
@@ -987,6 +1023,18 @@ void replace_other_by_empty()
             if (mazearray[x][y] == OTHER) mazearray[x][y] = EMPTY;
 }
 
+void print_maze()
+{
+    for (int i = 0; i < SIZE; ++i)
+    {
+        for (int j = 0; j < SIZE; ++j)
+        {
+            if (mazearray[j][i] == '0') printf(" ");
+            else printf("%c",mazearray[j][i]);
+        }
+        printf("\n");
+    }
+}
 ////////////////////////////////////////////////////////////////////////////
 /* Frustum calling 
  * On grid level
@@ -1030,7 +1078,7 @@ void generate_frustum_culling(vec3* camera_pos, vec3* camera_lookat)
     // FIll in the middle
     flood_frustum(x, y);
 
-    print_culling();
+    //print_culling();
 }
 void plotLineLow(int x0, int y0, int x1, int y1)
 {
