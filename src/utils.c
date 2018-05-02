@@ -835,7 +835,7 @@ int create_maze() {
     generate_door(&door_x, &door_y);
     
     // FInd best location for lever
-    max_dist = 0; max_x = 0; max_y = 0;
+    
     reset_generate_end();
     generate_end(door_x, door_y, 0);
     
@@ -847,10 +847,9 @@ int create_maze() {
     }
     // Set lever
     mazearray[max_x][max_y] = 'L';
-    
-    
-    
 
+    generate_scores();
+    
     print_maze();
 
     return 0;
@@ -961,6 +960,7 @@ void solve_maze() {
 // Reset mazearray_flood to allow the flood algorithm to work
 void reset_generate_end()
 {
+    max_dist = 0; max_x = 0; max_y = 0;
     for (int x = 0; x < SIZE; ++x)
         for (int y = 0; y < SIZE; ++y)
             mazearray_flood[x][y] = mazearray[x][y];
@@ -1012,7 +1012,6 @@ void generate_door(int* x_out, int* y_out)
         curr = mazearray[x][y];
         curr_step++;
     }
-
 }
 
 // Replace OTHER cells used during solve by empty cells
@@ -1023,6 +1022,29 @@ void replace_other_by_empty()
             if (mazearray[x][y] == OTHER) mazearray[x][y] = EMPTY;
 }
 
+void generate_scores()
+{
+    int i = 0;
+    while (i < 3) // For 3 score objects
+    {
+        // New random position
+        int x = (rand() % (SIZE-2)) + 1;
+        int y = (rand() % (SIZE-2)) + 1;
+        if (mazearray[x][y] == EMPTY)
+        {
+            int count_sides =   (mazearray[x+1][y] != WALL) + 
+                                (mazearray[x-1][y] != WALL) + 
+                                (mazearray[x][y+1] != WALL) + 
+                                (mazearray[x][y-1] != WALL);
+
+            if (count_sides == 1) // Check that it is in a dead end
+            {
+                mazearray[x][y] = SCORE;
+                i++;
+            }   
+        }
+    }
+}
 void print_maze()
 {
     for (int i = 0; i < SIZE; ++i)

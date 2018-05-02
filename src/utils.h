@@ -105,6 +105,7 @@ void generate_door(int* x, int* y);
 void replace_other_by_empty();
 void print_maze();
 void generate_lever(int x, int y);
+void generate_scores();
 
 void generate_frustum_culling(vec3* camera_pos, vec3* camera_lookat);
 void print_culling();
