@@ -59,4 +59,4 @@ The [MicroGlut API](http://www.ragnemalm.se/lightweight/) was used for this proj
 - UI : score, level, objective and interactive button indications shown.
 - Sound effects : ambiant and interactions
 - Drawing optimized : done using 2D frustum calling, and custom flood-bassed algorithm  
-- Random generated maze : maze, start, end and door are generated, need to implement lever and scores.
+- Random generated maze : maze, start, end and door are generated, as well as lever and scores.
