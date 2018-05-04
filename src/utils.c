@@ -9,7 +9,7 @@
 #define VERT_SPEED 0.01
 #define ROT_SPEED 0.04
 
-#define FLOOD_SIZE 0.9*SIZE
+#define FLOOD_SIZE SIZE
 
 // Sounds
 ALuint score_sound;
@@ -47,6 +47,15 @@ char culling_grid[SIZE][SIZE];
 // Main function, react to keyboard, moves the camera, check for objectives and collisions
 void update(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
 {
+
+    if (glutKeyIsDown(GLUT_KEY_ESC))
+    {
+        alDeleteBuffers(1,&score_sound);
+        HaltCallMeAL();
+    
+        // Exit
+        exit(0);
+    }
     // Allow us to go to next level
     if (glutKeyIsDown('p') && mazearray[(int)floor(camera_pos->x)][(int)floor(camera_pos->z)] != 'B')
     {
