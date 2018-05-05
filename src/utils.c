@@ -6,7 +6,6 @@
 #define DIST_TO_WALL 0.1
 
 #define HOR_SPEED 0.02
-#define VERT_SPEED 0.01
 #define ROT_SPEED 0.04
 
 #define FLOOD_SIZE SIZE
@@ -48,6 +47,9 @@ char culling_grid[SIZE][SIZE];
 void update(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
 {
 
+    float horizontal_speed = HOR_SPEED; 
+    float rotation_speed = ROT_SPEED;
+
     if (glutKeyIsDown(GLUT_KEY_ESC))
     {
         alDeleteBuffers(1,&score_sound);
@@ -69,13 +71,12 @@ void update(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
         generate_frustum_culling(camera_pos, camera_lookat);
         set_lights();
     }
-    
-    float horizontal_speed = HOR_SPEED; 
-    float rotation_speed = ROT_SPEED;
-    float vertical_speed = VERT_SPEED;
-
-    // Allow faster travel for debugging and demonstration purpose
+     // Allow faster travel for debugging and demonstration purpose
     if (glutKeyIsDown('c')) horizontal_speed = 2*HOR_SPEED;
+    
+    
+
+   
     
     // Check if we are on a lever before moving
     int was_on_lever = (get_xy_cell(camera_pos->x, camera_pos->z) == LEVER ||
@@ -751,11 +752,11 @@ void allocate_particles(particle*** array, double x, double y)
     for (int i = 0; i < N_PARTICLES ; ++i)
     {
         particle* p = malloc(sizeof(particle));
-        reset_particle(p, x, y, i);
+        reset_particle(p, x, y);
         (*array)[i] = p;    
     }
 }
-void reset_particle(particle* p, double x, double y, int i)
+void reset_particle(particle* p, double x, double y)
 {
     // Put the particle position at the given coordinate, with default values
    
@@ -786,7 +787,7 @@ void simulate_particules(particle** particles, double x, double y)
         // If back to the ground, reset
         if (p->y < 0 && p->vy < 0) 
         {
-            reset_particle(p, x, y, i);
+            reset_particle(p, x, y);
         }
 
         // If close to the ground, stop them to give the effect that they stay a little bit
@@ -826,7 +827,7 @@ int max_dist = 0;
 int max_x = 0;
 int max_y = 0;
 
-int create_maze() {
+void create_maze() {
 
     /* Generate and display the maze. */
     generate_empty();
@@ -861,7 +862,6 @@ int create_maze() {
     
     print_maze();
 
-    return 0;
 }
 
 /*  Carve the maze starting at x, y. */

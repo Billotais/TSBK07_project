@@ -1,10 +1,22 @@
 # set this variable to the director in which you saved the common files
 commondir = ../common/
 
+CC = gcc
+
+OUT = -o main.out
+
+INCL_H = -I. -I$(commondir) -I$(commondir)/Linux
+
+FLAGS = -DGL_GLEXT_PROTOTYPES -lXt -lX11 -lGL -lm -lopenal -g -Wno-unused-function -Wno-unused-variable -Wall
+
+SRC = main.c utils.c 
+
+LIB = $(commondir)simplefont.c $(commondir)GL_utilities.c $(commondir)CallMeAL.c $(commondir)VectorUtils3.c $(commondir)loadobj.c $(commondir)LoadTGA.c $(commondir)Linux/MicroGlut.c
+
 all : clean main run
 
-main : main.c $(commondir)simplefont.c $(commondir)GL_utilities.c $(commondir)CallMeAL.c $(commondir)VectorUtils3.c $(commondir)loadobj.c $(commondir)LoadTGA.c $(commondir)Linux/MicroGlut.c
-	gcc -Wall -o main.out -I$(commondir) -I../common/Linux -DGL_GLEXT_PROTOTYPES main.c $(commondir)simplefont.c $(commondir)GL_utilities.c $(commondir)CallMeAL.c $(commondir)loadobj.c $(commondir)VectorUtils3.c $(commondir)LoadTGA.c $(commondir)Linux/MicroGlut.c utils.c -lXt -lX11 -lGL -lm -lopenal -g
+main : $(SRC) $(LIB)
+	$(CC) $(OUT) $(INCL_H) $(SRC) $(LIB) $(FLAGS)
 run:
 	./main.out
 clean :

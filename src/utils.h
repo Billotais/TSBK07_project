@@ -89,13 +89,13 @@ void flood_from_position(int x, int y, int count, vec3* camera_pos, vec3 * camer
 void reset_flood();
 
 void allocate_particles(particle*** array, double x, double y);
-void reset_particle(particle* p, double x, double y, int i);
+void reset_particle(particle* p, double x, double y);
 void simulate_particules(particle** particles, double x, double y);
 void free_particles(particle** particles);
 
 void get_start_cell_position(int* x, int* y);
 
-int create_maze();
+void create_maze();
 void carve_maze(int x, int y);
 void generate_empty();
 void solve_maze();
