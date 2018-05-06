@@ -173,6 +173,7 @@ void update(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
     }
     if (!ChannelIsPlaying(1)) PlaySoundInChannel(ambiance_sound, 1);
 
+    print_maze();
     
     
 }
@@ -1060,8 +1061,23 @@ void print_maze()
     {
         for (int j = 0; j < SIZE; ++j)
         {
-            if (mazearray[j][i] == '0') printf(" ");
-            else printf("%c",mazearray[j][i]);
+            
+            if (glutKeyIsDown('v'))
+            {
+                if (is_flood(j, i)) printf("\x1B[31m");
+                else  printf("\x1B[37m");
+            }
+            
+            else
+            {
+                if (culling_grid[j][i] == FLOOD) printf("\x1B[31m");
+                else printf("\x1B[37m");
+                
+            }
+            printf("%c",mazearray[j][i] == '0' ? '.' : mazearray[j][i]);
+            
+            
+            
         }
         printf("\n");
     }
