@@ -94,7 +94,7 @@ void init(void)
 	model = LoadModelPlus("../models/square.obj");
 	skybox = LoadModelPlus("../models/skybox.obj");
 	score = LoadModelPlus("../models/chest.obj");
-	lever = LoadModelPlus("../models/bunnyplus.obj");
+	lever = LoadModelPlus("../models/key.obj");
 	flag = LoadModelPlus("../models/trophy.obj");
 	part = LoadModelPlus("../models/coin.obj");
 
@@ -104,7 +104,7 @@ void init(void)
 	LoadTGATextureSimple("../textures/wall_albedo.tga", &wallTex);
 	LoadTGATextureSimple("../textures/skybox.tga", &skyTex);
 	LoadTGATextureSimple("../textures/chest.tga", &scoreTex);
-	LoadTGATextureSimple("../textures/door.tga", &leverTex);
+	LoadTGATextureSimple("../textures/key.tga", &leverTex);
 	LoadTGATextureSimple("../textures/plates_albedo.tga", &objectiveTex);
 	LoadTGATextureSimple("../textures/gold.tga", &flagTex);
 	LoadTGATextureSimple("../textures/gold.tga", &particleTex);

@@ -500,7 +500,7 @@ void init_sound()
     }
     // Load all sounds
     score_sound = LoadSound("../sounds/score.wav");
-    door_sound = LoadSound("../sounds/door.wav"); 
+    door_sound = LoadSound("../sounds/key.wav"); 
     ambiance_sound = LoadSound("../sounds/creepy_ambiance.wav");
     victory_sound = LoadSound("../sounds/victory.wav");
     cup_picked_sound = LoadSound("../sounds/cup_picked.wav");
@@ -626,18 +626,20 @@ void draw_score(int x, int y, Model *model, GLuint program)
 // Draw the lever in its non-trigger position
 void draw_up_lever(int x, int y, Model *model, GLuint program)
 {
-    mat4 model_pos = T(x+0.5, 0.5, y+0.5);
-    mat4 model_scale = S(0.1, 0.1, 0.1);
-    mat4 model_transform = Mult(model_pos, model_scale);
+    mat4 model_pos = T(x+0.5, 0.4, y+0.5);
+    mat4 model_scale = S(0.03, 0.03, 0.03);
+    mat4 model_rot = Rx(PI);
+    mat4 model_transform = Mult(Mult(model_pos, model_scale), model_rot);
     glUniformMatrix4fv(glGetUniformLocation(program, "transformMatrix"), 1, GL_TRUE, model_transform.m);
     DrawModel(model, program, "in_vertex",  "in_normal", "in_texture");
 }
 // Draw the lever in its trigger positeion
 void draw_down_lever(int x, int y, Model *model, GLuint program)
 {
-    mat4 model_pos = T(x+0.5, 0.5, y+0.5);
-    mat4 model_scale = S(0.06, 0.06, 0.06);
-    mat4 model_transform = Mult(model_pos, model_scale);
+    mat4 model_pos = T(x+0.5, 0.4, y+0.5);
+    mat4 model_scale = S(0.03, 0.03, 0.03);
+    mat4 model_rot = Rx(PI/2.0);
+    mat4 model_transform = Mult(Mult(model_pos, model_scale), model_rot);
     glUniformMatrix4fv(glGetUniformLocation(program, "transformMatrix"), 1, GL_TRUE, model_transform.m);
     DrawModel(model, program, "in_vertex",  "in_normal", "in_texture");
 }
