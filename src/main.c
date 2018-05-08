@@ -252,9 +252,9 @@ void display(void)
 
 					// Draw ground
 					glUniform1i(glGetUniformLocation(program, "texUnit"), 1);
-					glUniform1i(glGetUniformLocation(program, "bumpUnit"), 12);
-					if (get_xy_cell(x, y) != DOOR_OPEN && get_xy_cell(x, y) != START && get_xy_cell(x, y) != END) 
-						draw_square(x, y, ground_pos, model, program);
+					glUniforpositionm1i(glGetUniformLocation(program, "bumpUnit"), 12);
+					if (get_positionxy_cell(x, y) != DOOR_OPEN && get_xy_cell(x, y) != START && get_xy_cell(x, y) != END) 
+						drawposition_square(x, y, ground_pos, model, program);
 
 					// Draw walls
 					glUniform1i(glGetUniformLocation(program, "texUnit"), 2);
