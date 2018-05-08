@@ -49,7 +49,7 @@ void main(void)
 		{
 			light_transformed = lightSources[i];
 			// For optimisation, only compute for squares that are close enough
-			if (abs(floor(light_transformed.x) - x) + abs(floor(light_transformed.z) - y) > 2) continue;
+			if (abs(floor(light_transformed.x) - x) + abs(floor(light_transformed.z) - y) > 3) continue;
 		}
 		// Spotlight light
 		if (i == lightCount) light_transformed = cameraPosition;
@@ -79,14 +79,14 @@ void main(void)
 		vec3 specular = 0.4*reflectivity*light_level*pow(max(0,dot(r, vertex_to_camera)), specularExponent);
 
 		// Attenutation
-		float attenuation = (1.0 / (1.0 + (0.05 * distance * distance)));
+		float attenuation = (1.0 / (1.0 + (0.03 * distance * distance)));
 
 		// Spotlight effect, for the moving light
-		int spotlight_angle = 30;
+		int spotlight_angle = 25;
 		if (i == lightCount)
 		{
 			float lightToSurfaceAngle = degrees(acos(dot(-vertex_to_light, normalize(cameraOrientation))));
-			if(lightToSurfaceAngle > 30){
+			if(lightToSurfaceAngle > spotlight_angle){
 				attenuation/= sqrt((lightToSurfaceAngle - spotlight_angle)/2.0 + 1);
 			}
 		}

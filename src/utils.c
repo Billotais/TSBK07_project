@@ -5,7 +5,7 @@
 #define WOBBLE_SPEED 0.2
 #define DIST_TO_WALL 0.1
 
-#define HOR_SPEED 0.02
+#define HOR_SPEED 0.03
 #define ROT_SPEED 0.04
 
 #define FLOOD_SIZE SIZE
