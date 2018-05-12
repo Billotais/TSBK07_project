@@ -93,17 +93,18 @@ void init(void)
 	// Load models
 	model = LoadModelPlus("../models/square.obj");
 	skybox = LoadModelPlus("../models/skybox.obj");
-	score = LoadModelPlus("../models/chest.obj");
+	score = LoadModelPlus("../models/box.obj");
 	lever = LoadModelPlus("../models/key.obj");
 	flag = LoadModelPlus("../models/trophy.obj");
 	part = LoadModelPlus("../models/coin.obj");
 
 	// Load textures and bump maps
+	LoadTGASetMipmapping(true);
 	LoadTGATextureSimple("../textures/ground_albedo.tga", &groundTex);
 	LoadTGATextureSimple("../textures/wood_albedo.tga", &doorTex);
 	LoadTGATextureSimple("../textures/wall_albedo.tga", &wallTex);
 	LoadTGATextureSimple("../textures/skybox.tga", &skyTex);
-	LoadTGATextureSimple("../textures/chest.tga", &scoreTex);
+	LoadTGATextureSimple("../textures/box.tga", &scoreTex);
 	LoadTGATextureSimple("../textures/key.tga", &leverTex);
 	LoadTGATextureSimple("../textures/plates_albedo.tga", &objectiveTex);
 	LoadTGATextureSimple("../textures/gold.tga", &flagTex);

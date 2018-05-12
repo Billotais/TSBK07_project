@@ -617,8 +617,8 @@ void draw_square(int x, int y, mat4 base, Model *model, GLuint program)
 // Draw a score object
 void draw_score(int x, int y, Model *model, GLuint program)
 {
-    mat4 model_pos = T(x+0.5, 0, y+0.5);
-    mat4 model_scale = S(0.2, 0.2, 0.2);
+    mat4 model_pos = T(x+0.5, 0.1, y+0.5);
+    mat4 model_scale = S(0.1, 0.2, 0.1);
     mat4 model_transform = Mult(model_pos, model_scale);
     glUniformMatrix4fv(glGetUniformLocation(program, "transformMatrix"), 1, GL_TRUE, model_transform.m);
     DrawModel(model, program, "in_vertex",  "in_normal", "in_texture");

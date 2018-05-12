@@ -64,7 +64,7 @@ void main(void)
 
 		// Ambiant lighting, only for the moving light
 		vec3 ambiant = vec3(0.0);
-		if (i == lightCount) ambiant = vec3(0.1);
+		if (i == lightCount) ambiant = vec3(0.2);
 		
 		// Diffuse component
 		float costheta = dot(transfer_normal_transformed,vertex_to_light);
@@ -80,10 +80,11 @@ void main(void)
 
 		// Attenutation
 		float attenuation = (1.0 / (1.0 + (0.03 * distance * distance)));
+		
 
 		// Spotlight effect, for the moving light
 		int spotlight_angle = 25;
-		if (i == lightCount)
+		if (i == lightCount && bumpMap)
 		{
 			float lightToSurfaceAngle = degrees(acos(dot(-vertex_to_light, normalize(cameraOrientation))));
 			if(lightToSurfaceAngle > spotlight_angle){
