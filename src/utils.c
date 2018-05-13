@@ -1064,7 +1064,7 @@ void print_maze()
         for (int j = 0; j < SIZE; ++j)
         {
             
-            if (glutKeyIsDown('v'))
+            if (!glutKeyIsDown('v'))
             {
                 if (is_flood(j, i)) printf("\x1B[31m");
                 else  printf("\x1B[37m");
