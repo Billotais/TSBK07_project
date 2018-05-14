@@ -75,7 +75,7 @@ void update(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
     if (glutKeyIsDown('c')) horizontal_speed = 2*HOR_SPEED;
     
     
-
+    
    
     
     // Check if we are on a lever before moving
