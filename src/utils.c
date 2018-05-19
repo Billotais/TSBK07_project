@@ -1,6 +1,6 @@
 #include "utils.h"
 
-#define N_PARTICLES 1000
+#define N_PARTICLES 3000
 #define WOBBLE_HEIGHT 30
 #define WOBBLE_SPEED 0.2
 #define DIST_TO_WALL 0.1
@@ -63,7 +63,6 @@ void update(vec3* camera_pos, vec3* camera_lookat, vec3* camera_rot)
     {
         end_level(camera_pos, camera_lookat, camera_rot);
     }
-
     if (!glutKeyIsDown('q'))
     {
         reset_flood();
