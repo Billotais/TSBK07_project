@@ -14,6 +14,8 @@ $ make
 
 to compile and run the project. The GCC compiler and OpenGL are needed. All other libraries are included in the repository. Tested on Linux using GCC 7.3.1 - OpenGL 4.5 - Mesa 18.0.1
 
+Our source code is located in the src folder. All the libraries used are in the common folder.The powerpoint presentation used is available in the repository, as well as a final report.
+
 ### About
 
 This is a 3D Maze game, where you have to find the Holy Grail and bring it back. Some paths are closed and require you to find a lever to open the door. To improve your score, find the chest hidden inside the maze. 
