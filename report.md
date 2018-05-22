@@ -10,10 +10,27 @@ We wanted to create a game, and a maze seemed to be an idea that could be relati
 
 In the end, we ended implementing all the functionalities described above, as well as a user interface, and some improvments to the lightning system compared to the one done in the labs.
 
-What we have now : TODO
+In the end, we have the following functionalites : 
 
-# Background information
- ? 
+- Skybox
+- Textured walls and floor and objects
+- Collission detection between the camera / holy grail and the walls
+- Simple geometry for objects, like boxes and spheres, abbility to interract with score objects, flag, ...
+- First-person view 
+- Light sources : one on player, score objects, levers and start/end, updates when objects in the maze change, optimized to only applied to close enough cells
+- Spotlight source following the player
+- Normal mapping for flat surfaces (walls, ground)
+- Importing of OBJ objects
+- Score objects, with UI indicator
+- Dynamic maze (open / close some doors) when using the lever
+- Maze descibed by a text file, stored as a 2D array. 
+- Multi level management, with automatic level switching, correct positioning and direction of player on spawn
+- We can pick the flag and take it with us, has an animation and collision with walls
+- Special graphics for the goal: Gold coin fountain on the start cell when holding the cup, with the coins staying on the floor for a while
+- UI : score, level, objective and interactive button indications shown.
+- Sound effects : ambiant and interactions
+- Drawing optimized : done using 2D frustum calling, and custom flood-bassed algorithm  
+- Random generated maze : maze, start, end and door are generated, as well as lever and scores.
 
 # Implementation details
 
@@ -70,7 +87,11 @@ The spotlight effect is done by calculating the angle between the light orientat
 
 ## Particle system
 
-For our particle system, we decided to put the simulation in the CPU, instead of in the GPU. On the first look, it might be a bad idea if we want to have a lot of particles, but it actually doesn't matter in our case. The biggest problem when increasing the number of partivles is actually the GPU. Indeed, each one of the particle is actually is complete 3d model, and putting 10'000 objects, each one with lighting computation is too much for a integerated GPU. If we would have wanted to have a huge number of particles, we would have had to change the design of them completly, so they would simply be triangles with no lighting. Only once this is done we can start increasing the number of particles and potentially move the simluation to the GPU to, this time, reduce the bottleneck from the CPU.
+We deicded to add a particle system for the goal to make it look nicer. The code is split in two main parts, the sumulation and the drawing. To simluate, we need an array containing all the particles, and we need to instanciate all those particles. We will give each one of them a semi-random position, speed and orientation. The *y* position will be between *0* and *-1*, corresponding to up to one "wall-height" under the ground. This will allow us to create all the particles ar the same time, but sill have them come out of the ground at a different time, giving this fountain effect. The *x* and *z* posiiitions are centered around the middle of the cell, with a little displacement. The speed is, for the three axis, also random. We give a random orientation so not all the models are facing in the same direction. At each step of the iteration, we will add the speed values to the position values, and this for the three axis. We add a little bit of noise to the positions, to make them look less artificial. To simulate the gravity, we remove a constan value from the vertical speed at every step. 
+
+We also wanted to give the effect that the particles stay on the ground. We first tried doing this by stoping the movement of the particles when they were on the ground, and generate new ones, but it quickly gave some performance issues. Instead, we only keep them for a little while, and then use them as "new" particles. Do do this, we check the distance from the particle to the ground, and if a particle is really close to the ground, we set it's horizontal speed to 0, and use a smaller gravity constant for the rest of the simulation. Once the particle reaches under the ground, we can reset it and give it new a original position. To draw them, we simply look into the particle array and call *draw_model* using some transformation matrices depending on the particle's position and orientation. 
+
+To implement it, we decided to put the simulation in the CPU, instead of in the GPU. On the first look, it might be a bad idea if we want to have a lot of particles, but it actually doesn't matter in our case. The biggest problem when increasing the number of partivles is actually the GPU. Indeed, each one of the particle is actually is complete 3d model, and putting 10'000 objects, each one with lighting computation is too much for a integerated GPU. If we would have wanted to have a huge number of particles, we would have had to change the design of them completly, so they would simply be triangles with no lighting. Only once this is done we can start increasing the number of particles and potentially move the simluation to the GPU to, this time, reduce the bottleneck from the CPU.
 
 ## Maze generation
 
